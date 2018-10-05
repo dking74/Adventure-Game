@@ -1,7 +1,12 @@
-# You are welcome to write and include any other Python files you want or need
-# however your game must be started by calling the main function in this file.
+from gameplay import Game
+from display import *
+from thread import *
 
 def main():
-    print('YOUR GAME SHOULD BE STARTED HERE. ALSO REMOVE THIS.')
+    displayThread = Thread("displayThread", 1, Display.updateScene())
+    gameplayThread = Thread("playthread", 2, Game.playGame())
+    gameplayThread.startThread()
+    displayThread.startThread()
     
-main()
+if __name__ == "__main__":
+    main()
