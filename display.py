@@ -1,6 +1,7 @@
 import graphics
+from graphics import Image, Point
 from enum import Enum
-from gameplay import Game, GameState
+from gameplay import *
 
 class DisplayState(Enum):
     START = 0
@@ -11,6 +12,7 @@ class DisplayState(Enum):
     WIN = 5
     LOSE = 6
     AGAIN = 7
+    END = 8
 
 class MainDisplay(graphics.GraphWin):
 
@@ -35,10 +37,50 @@ class MainDisplay(graphics.GraphWin):
 
         super().__init__(title, width, height)
         self._dislayState = DisplayState.START
-        self.gameInstance = Game()
+        self._backgroundImage = backgroundImage
+        self._createBackground(Point(self.getWidth()/2, self.getHeight()/2))
 
-    @staticmethod
-    def updateScene():
+    def _createBackground(self, location):
+
+        """Create background image for window"""
+        newImage = Image(location, self._backgroundImage)
+        newImage.draw(self)
+
+    @property
+    def state(self):
+
+        """Getter for the state of the display"""
+        return self._dislayState
+
+    @state.setter
+    def state(self, newState):
+
+        """Setter for the state of the display"""
+        self._dislayState = newState
+
+    def updateScene(self, gameInstance):
+        
+        """Update scene until we are at the end"""
+        while self._dislayState != DisplayState.END:
+            if self._dislayState == DisplayState.START:
+                pass
+            elif self._dislayState == DisplayState.REGPLAY:
+                pass
+            elif self._dislayState == DisplayState.PAUSED:
+                pass
+            elif self._dislayState == DisplayState.GOODNEWS:
+                pass
+            elif self._dislayState == DisplayState.BADNEWS:
+                pass
+            elif self._dislayState == DisplayState.WIN:
+                pass
+            elif self._dislayState == DisplayState.LOSE:
+                pass
+            elif self._dislayState == DisplayState.AGAIN:
+                pass
+
+class SubDisplay(graphics.GraphWin):
+
+    """Class to display sub object screens based on main screen"""
+    def __init__(self):
         pass
-
-

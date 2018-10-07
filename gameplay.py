@@ -1,5 +1,7 @@
 from enum import Enum
-from display import MainDisplay, DisplayState
+from display import *
+from situations import *
+from characters import *
 
 class GameState(Enum):
     START = 1
@@ -18,7 +20,8 @@ class Game():
 
         '''
         Purpose: To initialize the game
-        Parameters: None
+        Parameters: 
+            - displayInstance (MainDisplay): An instance of the main display
         
         Returns: None
         '''
@@ -26,16 +29,21 @@ class Game():
         self.mainCharacter = ""
         self.bestFriend = ""
         self._state = GameState.START
-        self.displayInstance = MainDisplay()
 
     @property
     def state(self):
+
+        """Getter to get state of game"""
         return self._state
 
     @state.setter
     def state(self, newState):
+
+        """Setter to set state of game"""
         self._state = newState
 
-    @staticmethod
-    def playGame():
-        pass
+    def playGame(self, displayInstance):
+        
+        """Run the game until the end has reached"""
+        while self._state != GameState.END:
+            pass
