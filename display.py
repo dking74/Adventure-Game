@@ -1,7 +1,11 @@
 import graphics
 from graphics import Image, Point
+from widgets import MyButton
+from music import Music
 from enum import Enum
 from gameplay import *
+import tkinter
+import datetime
 
 class DisplayState(Enum):
     START = 0
@@ -36,8 +40,10 @@ class MainDisplay(graphics.GraphWin):
         '''
 
         super().__init__(title, width, height)
+        self.pack_propagate(0)
         self._dislayState = DisplayState.START
         self._backgroundImage = backgroundImage
+        self._createButtons('Pause', 'Stop Music')
         self._createBackground(Point(self.getWidth()/2, self.getHeight()/2))
 
     def _createBackground(self, location):
@@ -45,6 +51,33 @@ class MainDisplay(graphics.GraphWin):
         """Create background image for window"""
         newImage = Image(location, self._backgroundImage)
         newImage.draw(self)
+
+    def _createButtons(self, *buttonNames):
+
+        """Manages buttons on main display"""
+
+        # create callback for buttons
+        def stopPressed(button):
+            button.lastClick = datetime.datetime.now().time()
+            button.pressed = not button.pressed
+            if button.pressed:
+                Music.resumeMusic()
+                button.buttonName = "Stop Music"
+            else:
+                Music.pauseMusic()
+                button.buttonName = "Play Music"
+            print(button.lastClick)
+
+        # create the buttons
+        try:
+            #pauseButton = MyButton(self, None, buttonNames[0], width=7, height=2, side=tkinter.RIGHT)
+            stopMusicButton = MyButton(self, None, buttonNames[1], width=7, height=2, side=tkinter.RIGHT)
+            stopMusicButton.config(command=lambda: stopPressed(stopMusicButton))
+            stopMusicButton.place(x=525, y=50)
+            #pauseButton.packButton()
+            #stopMusicButton.packButton()
+        except IndexError:
+            pass      
 
     @property
     def state(self):

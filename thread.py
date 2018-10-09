@@ -9,7 +9,7 @@ class Thread(threading.Thread):
     Inherits: threading.Thread (a class to handle multiple events)
     '''
 
-    def __init__(self, name, priority, callback, args=()):
+    def __init__(self, name, priority, callback, *args):
 
         '''
         Purpose: To initialize a thread object
