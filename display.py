@@ -1,12 +1,23 @@
 import graphics
-from graphics import Image, Point
-from widgets import MyButton
+from graphics import Image, Point, Rectangle, Entry, Text
+from widgets import MyButton, defineProps
 from music import Music
 from enum import Enum
 from gameplay import *
 import tkinter
 import datetime
 
+#properties of a general button
+buttonProps = {
+    'highlightthickness': '2px', 
+    'highlightbackground': 'black', 
+    'width': 9, 
+    'height': 2,
+    'background': 'black',
+    'relief': 'sunken'
+}
+
+# states of a display
 class DisplayState(Enum):
     START = 0
     REGPLAY = 1
@@ -43,7 +54,7 @@ class MainDisplay(graphics.GraphWin):
         self.pack_propagate(0)
         self._dislayState = DisplayState.START
         self._backgroundImage = backgroundImage
-        self._createButtons('Pause', 'Stop Music')
+        self._createButtons('Exit Game', 'Pause Game', 'Stop Music')
         self._createBackground(Point(self.getWidth()/2, self.getHeight()/2))
 
     def _createBackground(self, location):
@@ -52,32 +63,57 @@ class MainDisplay(graphics.GraphWin):
         newImage = Image(location, self._backgroundImage)
         newImage.draw(self)
 
+    def _defineButtons(self, *buttonNames):
+
+        """Define the button structures"""
+        exitButton = pauseButton = stopMusicButton = None
+        try:
+            exitButton = MyButton(self, buttonNames[0], **buttonProps)
+            pauseButton = MyButton(self, buttonNames[1], **buttonProps)
+            stopMusicButton = MyButton(self, buttonNames[2], **buttonProps) 
+
+            # position the buttons
+            exitButton.place(x=15, y=8)
+            pauseButton.place(x=510, y=8)
+            stopMusicButton.place(x=510, y=50)
+        except IndexError:
+            pass  
+        return exitButton, pauseButton, stopMusicButton
+
     def _createButtons(self, *buttonNames):
 
         """Manages buttons on main display"""
 
-        # create callback for buttons
-        def stopPressed(button):
-            button.lastClick = datetime.datetime.now().time()
-            button.pressed = not button.pressed
-            if button.pressed:
+        # create the buttons and return the button instances
+        exitButton, pauseButton, stopMusicButton = self._defineButtons(*buttonNames)
+
+        # create callback for each initial button
+        def exitPressed():
+            exitButton.lastClick = datetime.datetime.now().time()
+            exitButton.pressed = not exitButton.pressed
+            self.close()
+            import sys
+            sys.exit()
+
+        def pausePressed():
+            pauseButton.lastClick = datetime.datetime.now().time()
+            pauseButton.pressed = not pauseButton.pressed
+            print("paused")
+
+        def stopPressed():
+            stopMusicButton.lastClick = datetime.datetime.now().time()
+            stopMusicButton.pressed = not stopMusicButton.pressed
+            if stopMusicButton.pressed:
                 Music.resumeMusic()
-                button.buttonName = "Stop Music"
+                stopMusicButton.buttonName = "Stop Music"
             else:
                 Music.pauseMusic()
-                button.buttonName = "Play Music"
-            print(button.lastClick)
+                stopMusicButton.buttonName = "Play Music"
 
-        # create the buttons
-        try:
-            #pauseButton = MyButton(self, None, buttonNames[0], width=7, height=2, side=tkinter.RIGHT)
-            stopMusicButton = MyButton(self, None, buttonNames[1], width=7, height=2, side=tkinter.RIGHT)
-            stopMusicButton.config(command=lambda: stopPressed(stopMusicButton))
-            stopMusicButton.place(x=525, y=50)
-            #pauseButton.packButton()
-            #stopMusicButton.packButton()
-        except IndexError:
-            pass      
+        # configure the buttons callback
+        exitButton.callbackFunc = exitPressed
+        pauseButton.callbackFunc = pausePressed               
+        stopMusicButton.callbackFunc = stopPressed
 
     @property
     def state(self):
@@ -91,10 +127,39 @@ class MainDisplay(graphics.GraphWin):
         """Setter for the state of the display"""
         self._dislayState = newState
 
+    def _showWelcomeScreen(self, messageBoxTop, messageBoxBottom, **props):
+
+        '''
+        Purpose: To provide a welcome message to user
+        Parameters:
+            - messageBoxTop (Point): The top left point of box
+            - messageBoxBottom(Point): The bottom right point of box
+            - props (dict): Properties of message box
+        
+        Returns: None
+        '''
+
+        rectangleBox = Rectangle(messageBoxTop, messageBoxBottom)
+        defineProps(rectangleBox, fill='black', outcolor='white', outwidth=3)
+        #textBox = Text()
+        rectangleBox.draw(self)
+        return rectangleBox
+
+    def _initializeDisplay(self):
+
+        """Initialize the display with a welcome message and
+           allowing the individiual to choose their character"""
+        welcomeBox = self._showWelcomeScreen(Point(self.getWidth()/2 - 200, self.getHeight()*3/4 - 100),
+                                             Point(self.getWidth()/2 + 200, self.getHeight()*3/4 + 100))
+        return welcomeBox
+
     def updateScene(self, gameInstance):
         
-        """Update scene until we are at the end"""
+        """Update scene until we are at the end;
+            Start with initialization"""
+        welcomeBox = self._initializeDisplay()
         while self._dislayState != DisplayState.END:
+            self._dislayState = DisplayState.END
             if self._dislayState == DisplayState.START:
                 pass
             elif self._dislayState == DisplayState.REGPLAY:

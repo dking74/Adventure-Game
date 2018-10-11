@@ -46,4 +46,5 @@ class Game():
         
         """Run the game until the end has reached"""
         while self._state != GameState.END:
+            self._state = GameState.END
             pass

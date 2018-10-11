@@ -48,3 +48,9 @@ class Thread(threading.Thread):
 
         """Call the parent join method to join thread"""
         self.join(timeout=timeout)
+
+class Semaphore(threading.Semaphore):
+    """A class with the ability to lock threads"""
+
+    def __init__(self):
+        pass

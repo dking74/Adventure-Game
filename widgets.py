@@ -1,5 +1,6 @@
 from tkinter import Button
 from enum import Enum
+import graphics
 
 class ButtonState(Enum):
     NOTPRESSED = 0
@@ -8,43 +9,25 @@ class ButtonState(Enum):
 class MyButton(Button):
     """Button widget class"""
 
-    def __init__(self, mainWindow, callback, buttonName="", *args, **props):
+    def __init__(self, mainWindow, buttonName="", **props):
         """Initialization of button
             mainWindow (GraphWin): The parent object to add to
-            callback (Func): Callback function to happen when button is pressed
             buttonName (Str): The text to give button
-            props (dict): Props to give button
-            args (list): Arguments for callback func"""
+            props (dict): Props to give button"""
         
 
-        super().__init__(mainWindow, text=buttonName, 
-                         width=props['width'] if 'width' in props else None,
-                         height=props['height'] if 'height' in props else None,
-                         command=lambda: callback(*args))
-        self._callbackFunc = callback
+        super().__init__(mainWindow, text=buttonName, **props)
         self._buttonName = buttonName
         self._lastClick = None
+        self._callbackFunc = None
         self._props = props
         self.pressed = ButtonState.NOTPRESSED
-
-    def packButton(self):
-
-        """Function to place button on window"""
-        # self.pack(side=self._props['side'] if 'side' in self._props else None,
-        #            padx=self._props['padx'] if 'padx' in self._props else None,
-        #            pady=self._props['pady'] if 'pady' in self._props else None)
-
-        
-        self.grid(row=0,column=1)
-                  #padx=self._props['padx'] if 'padx' in self._props else None,
-                  #pady=self._props['pady'] if 'pady' in self._props else None)
-        print (self.grid_size())
 
     def __str__(self):
 
         """print string representation of object"""
-        return "{} object with name '{}' and callback function '{}'".format(
-                    self.__class__.__name__, self._buttonName, self._callbackFunc.__name__)
+        return "{} object with name '{}'".format(
+                    self.__class__.__name__, self._buttonName)
 
     @property
     def buttonName(self):
@@ -75,7 +58,7 @@ class MyButton(Button):
     def callbackFunc(self):
 
         """Return callback func name"""
-        return self._callbackFunc.__name__
+        return self._callbackFunc
 
     @callbackFunc.setter
     def callbackFunc(self, newCallback):
@@ -83,3 +66,23 @@ class MyButton(Button):
         """set new callback function"""
         self._callbackFunc = newCallback
         self.config(command=self._callbackFunc)
+
+    def enableButton(self):
+        pass
+
+    def disableButton(self):
+        pass
+
+def defineProps(drawObject, **props):
+
+    """Initialize properties of widget or shape"""
+    try:
+        drawObject.setFill(props.get('fill', ''))
+        drawObject.setOutline(props.get('outcolor', 'black'))
+        drawObject.setWidth(props.get('outwidth', '1'))
+        drawObject.setStyle(props.get('style', 'normal'))
+        drawObject.setFace(props.get('face', 'helvetica'))
+        drawObject.setSize(props.get('size', '12'))
+        drawObject.setTextColor(props.get('textcolor', 'black'))
+    except (graphics.GraphicsError, AttributeError):
+        pass
