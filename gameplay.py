@@ -29,6 +29,9 @@ class Game():
         self.mainCharacter = ""
         self.bestFriend = ""
         self._state = GameState.START
+        self._wins = 0
+        self._losses = 0
+        self._averageMoveCount = 0
 
     @property
     def state(self):
@@ -42,9 +45,27 @@ class Game():
         """Setter to set state of game"""
         self._state = newState
 
+    @property
+    def wins(self):
+
+        """Get the current win count"""
+        return self._wins
+
+    @property
+    def losses(self):
+
+        """Get the current loss count"""
+        return self._losses
+
+    @property
+    def moveCount(self):
+
+        """Get the average move count
+           to win or lose"""
+        return self._averageMoveCount
+
     def playGame(self, displayInstance):
         
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             self._state = GameState.END
-            pass

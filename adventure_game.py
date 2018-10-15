@@ -17,6 +17,10 @@ from display import MainDisplay
 from music import Music
 from thread import Thread
 
+class WindowClosed(Exception):
+    """Exception raised when screen is no longer active"""
+    pass
+
 def createGameandDisplay(themeSong):
 
     '''
@@ -31,6 +35,17 @@ def createGameandDisplay(themeSong):
     musicInstance = Music(themeSong)
     return gameInstance, displayInstance, musicInstance
 
+def continueForever(display):
+    
+    """Keep reading forever,
+       until the screen is no longer active"""
+    while True:
+        try:
+            mouse = display.getMouse()
+        except Exception:
+            import sys
+            sys.exit()
+
 def startThreads(gameInstance, displayInstance, musicInstance):
 
     '''
@@ -38,28 +53,15 @@ def startThreads(gameInstance, displayInstance, musicInstance):
     Parameters:
         - displayInstance (MainDisplay): The display instance
         - gameInstance (Game): The game instance
-        - musicInstance
+        - musicInstance (Music): The music player
     
     Returns: None
     '''
 
     musicThread = Thread("musicThread", 3, musicInstance.playThemeMusic, displayInstance)
     gameplayThread = Thread("playthread", 2, gameInstance.playGame, displayInstance)
-    musicThread.startThread()
-    gameplayThread.startThread()
-    musicThread.joinThread()
-    gameplayThread.joinThread()
-
-def continueForever(display):
-
-    """Keep reading forever,
-       until the screen is no longer active"""
-    while True:
-        try:
-            display.getMouse()
-        except:
-            import sys
-            sys.exit()
+    displayInstance.updateScene(gameInstance)
+    continueForever(displayInstance)
 
 def main():
 
@@ -70,8 +72,6 @@ def main():
 
     # start worker threads --> main gui thread has to run in main loop
     startThreads(gameInstance, displayInstance, musicInstance)
-    displayInstance.updateScene(gameInstance)
-    continueForever(displayInstance)
     
 if __name__ == "__main__":
     main()

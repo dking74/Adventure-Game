@@ -26,6 +26,8 @@ class Thread(threading.Thread):
         self._name = name
         self._priority = priority
         self.callbackFunc = callback
+        self.startThread()
+        self.joinThread()
 
     def __repr__(self):
 
@@ -49,8 +51,19 @@ class Thread(threading.Thread):
         """Call the parent join method to join thread"""
         self.join(timeout=timeout)
 
-class Semaphore(threading.Semaphore):
+class Semaphore():
     """A class with the ability to lock threads"""
 
     def __init__(self):
-        pass
+
+        self.locking = threading.Lock()
+
+    def lock(self):
+
+        """Lock access down"""
+        self.locking.acquire()
+
+    def unlock(self):
+
+        """Unlock access"""
+        self.locking.release()

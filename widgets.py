@@ -1,10 +1,51 @@
-from tkinter import Button
+from tkinter import Button, Label
 from enum import Enum
 import graphics
+
+#properties of a general button
+buttonProps = {
+    'highlightthickness': '2px', 
+    'highlightbackground': 'black', 
+    'width': 9, 
+    'height': 2,
+    'background': 'black',
+    'relief': 'sunken'
+}
 
 class ButtonState(Enum):
     NOTPRESSED = 0
     PRESSED = 1
+
+class MyLabel(Label):
+    """Label widget class"""
+
+    def __init__(self, mainWindow, labelName="", **props):
+        """Initialization of label
+            mainWindow (GraphWin): The parent object to add to
+            labelName (Str): The text to give label
+            props (dict): Props to give label"""
+
+        super().__init__(mainWindow, text=labelName, **props)
+        self._labelName = labelName
+        self._props = props
+
+    def __str__(self):
+    
+        """print string representation of object"""
+        return "{} object with name '{}'".format(
+                    self.__class__.__name__, self._labelName)
+
+    @property
+    def labelName(self):
+
+        """Get the label name"""
+        return self._labelName
+
+    @labelName.setter
+    def labelName(self, newName):
+
+        """Set the new label name"""
+        self._labelName = newName
 
 class MyButton(Button):
     """Button widget class"""
@@ -68,10 +109,14 @@ class MyButton(Button):
         self.config(command=self._callbackFunc)
 
     def enableButton(self):
-        pass
+        
+        """Change the config to state of normal"""
+        self.config(state='normal')
 
     def disableButton(self):
-        pass
+
+        """Change the config to state of disabled"""
+        self.config(state='disabled')
 
 def defineProps(drawObject, **props):
 
@@ -79,10 +124,17 @@ def defineProps(drawObject, **props):
     try:
         drawObject.setFill(props.get('fill', ''))
         drawObject.setOutline(props.get('outcolor', 'black'))
-        drawObject.setWidth(props.get('outwidth', '1'))
-        drawObject.setStyle(props.get('style', 'normal'))
-        drawObject.setFace(props.get('face', 'helvetica'))
-        drawObject.setSize(props.get('size', '12'))
-        drawObject.setTextColor(props.get('textcolor', 'black'))
+        drawObject.setWidth(props.get('outwidth', 1))
     except (graphics.GraphicsError, AttributeError):
         pass
+
+def defineTextProps(drawObject, **props):
+
+    """Properties for text fields"""
+    try:
+        drawObject.setTextColor(props.get('textcolor', 'black'))
+        drawObject.setStyle(props.get('style', 'normal'))
+        drawObject.setFace(props.get('face', 'helvetica'))
+        drawObject.setSize(props.get('size', 12))
+    except (graphics.GraphicsError, AttributeError) as detail:
+        print(detail)
