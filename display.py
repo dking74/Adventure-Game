@@ -3,13 +3,13 @@ from graphics import Image, Point, Rectangle, Entry, Text, color_rgb
 from widgets import MyButton, defineProps, defineTextProps, buttonProps
 from music import Music
 from enum import Enum
-from gameplay import *
+from gameplay import GameState
 from threading import Timer
 from thread import Thread, Semaphore
 import tkinter
 import datetime
 import time
-import sys
+import os
 
 # create the semaphore for thread syncing
 threadSemaphore = Semaphore()
@@ -17,22 +17,23 @@ threadSemaphore = Semaphore()
 # decorator to check input values
 # acceptable input values is parameter1
 # position to place error message is second
-def errorCheckText(validValues, position):
+def errorCheckText(position, validValues=None):
     def check(func):
         def wrapper(*args, **kwargs):
             value = func(*args, **kwargs)
             errorTextField = None
 
             # if not valid, print text indicating
-            while value not in validValues:
-                errorTextField = Text(position, "Invalid Value entered. Try again.")
-                defineTextProps(errorTextField, textcolor='red', size=12)
-                errorTextField.draw(args[0])
-                value = func(*args, **kwargs)
-                
-                # Text Field was drawn; remove it
-                if errorTextField != None:
-                    errorTextField.undraw()
+            if validValues:
+                while value not in validValues:
+                    errorTextField = Text(position, "Invalid Value entered. Try again.")
+                    defineTextProps(errorTextField, textcolor='red', size=12)
+                    errorTextField.draw(args[0])
+                    value = func(*args, **kwargs)
+                    
+                    # Text Field was drawn; remove it
+                    if errorTextField != None:
+                        errorTextField.undraw()
             return value
         return wrapper
     return check
@@ -41,10 +42,9 @@ def errorCheckText(validValues, position):
 class DisplayState(Enum):
     START = 0
     REGPLAY = 1
-    PAUSED = 2
-    RESULT = 3
-    AGAIN = 4
-    END = 5
+    RESULT = 2
+    AGAIN = 3
+    END = 4
 
 class MainDisplay(graphics.GraphWin):
 
@@ -72,6 +72,7 @@ class MainDisplay(graphics.GraphWin):
         self._oldState = DisplayState.END
         self._currentState = DisplayState.START
         self._backgroundImage = backgroundImage
+        self._tempTextElement = None
 
     def _createBackground(self, location):
 
@@ -111,7 +112,7 @@ class MainDisplay(graphics.GraphWin):
             self._exitButton.lastClick = datetime.datetime.now().time()
             self._exitButton.pressed = not self._exitButton.pressed
             self.close()
-            sys.exit()
+            os._exit(1)
 
         def pausePressed():
             self._pauseButton.lastClick = datetime.datetime.now().time()
@@ -227,9 +228,7 @@ class MainDisplay(graphics.GraphWin):
                                          rectangleBox.getP1().getY()+15),
                                    0, 50, 7, 15,
                                    textcolor='green')
-        text, entry = self._continueMessage(Point((messageBoxTop.getX()+messageBoxBottom.getX())/2-75, 
-                                                   messageBoxBottom.getY()-40))
-        return rectangleBox, welcomeMessage, text, entry
+        return rectangleBox, welcomeMessage
 
     def _showCopyrightMessage(self, startPosition, **props):
 
@@ -250,13 +249,10 @@ class MainDisplay(graphics.GraphWin):
            allowing the individiual to choose their character"""
 
         titleText = self._showTitleScreen(Point(20, 120), "The Search For Horcruxes", size=90)
-        welcomeBox, \
-        welcomeText, \
-        continueText, \
-        continueField = self._showWelcomeScreen(
+        welcomeBox, welcomeText = self._showWelcomeScreen(
                             Point(self.getWidth()/2 - 200, self.getHeight()*3/4 - 100),
                             Point(self.getWidth()/2 + 200, self.getHeight()*3/4 + 100))
-        return titleText, welcomeBox, welcomeText, continueText, continueField
+        return titleText, welcomeBox, welcomeText
 
     def updateScene(self, gameInstance):
 
@@ -271,11 +267,12 @@ class MainDisplay(graphics.GraphWin):
         def closeProcess(*deletingObjects):
 
             '''To close the thread and window, along with cleanup'''
-            self._completeFuncAfterTime(4000, self._printGoodbye)
+            self._completeFuncAfterTime(4000, self._printMessage, "GOODBYE AND HAVE A NICE DAY!", Point(125, 400), 24, 15)
             self._deleteObject(*deletingObjects)
             time.sleep(1)
             changeState(DisplayState.END)
             self.close()
+            os._exit(1)
 
         # Update scene until we are at the end;
         # Initialize all variables needed first;
@@ -286,59 +283,96 @@ class MainDisplay(graphics.GraphWin):
 
         # start updating screen until the end is reached
         while self._currentState != DisplayState.END:
-            # make sure screen is still open
+
+            # make sure screen is still open; if not close app
             if self.isClosed():
-                sys.exit()
+                os._exit(1)
 
             # check the state and act appropriately
             stateChanged = self._stateChanged()
             if self._currentState == DisplayState.START and not stateChanged:
                 titleText, \
                 welcomeBox, \
-                welcomeText, \
-                continueText, \
-                continueField = self._initializeDisplay()
+                welcomeText = self._initializeDisplay()
 
                 # buttons are initially inactive; activate them
                 self._pauseButton.config(state='normal')
-                textEntered = self._handleEnterWithText(continueField)
+                textEntered, \
+                continueText, \
+                continueField = self._askUserQuestion("Do you wish to continue? (y/n)",
+                                                       Point((welcomeBox.getP1().getX()+welcomeBox.getP2().getX())/2-75, 
+                                                       welcomeBox.getP2().getY()-40),
+                                                       ['y', 'n'], size=16)
                 if textEntered == 'y':
+                    self._completeFuncAfterTime(4000, self._printMessage, "Great! Let's get started!", Point(125, 375), 24, 15)
                     self._deleteObject(continueText, continueField, welcomeText)
+                    time.sleep(.5)
+                    self._tempTextElement.undraw()
                     changeState(DisplayState.REGPLAY)
                 else:
                     closeProcess(continueText, continueField, welcomeText)    
-                
             elif self._currentState == DisplayState.REGPLAY and not stateChanged:
-                pass
-            elif self._currentState == DisplayState.PAUSED and not stateChanged:
-                pass
+
+                # get properties of character
+                character, textField, entry = self._askUserQuestion("What is the character name? ", Point(225, 425), None, size=16)
+                self._deleteObject(textField, entry)
+                questionText = Text(Point(300, 400), "What attribute will be your characters strength?")
+                defineTextProps(questionText, textcolor='green', size=16)
+                questionText.draw(self)
+                attribute, textField, entry = self._askUserQuestion("(1) Health (2) Power (3) Smarts", Point(300, 425), ['1', '2', '3'], size=12)
+                gameInstance.character.strength = attribute
+                self._deleteObject(textField, entry, questionText)
+
+                # Indicate game is beginning
+                gameInstance.character.characterName = character
+                gameInstance.state = GameState.PLAYING
+                begin = self._printMessage("{}, your game is beginning...".format(character), Point(125, 425), 35, 12, size=18)
+                time.sleep(1)
+                self._deleteObject(begin)
+                self._updateGameScene(gameInstance)
             elif self._currentState == DisplayState.RESULT and not stateChanged:
                 pass
             elif self._currentState == DisplayState.AGAIN and not stateChanged:
                 pass
 
-    def _printGoodbye(self):
+    def _updateGameScene(self, gameInstance):
+        
+        """Function that loops continuously waiting for game to update
+           to find the message to display"""
+        while gameInstance.state == GameState.PLAYING:
+            threadSemaphore.lock()
+            displayText = gameInstance.getDisplayMessage()
+            threadSemaphore.unlock()
 
-        """Print a goodbye message on screen with properties"""
-        goodbye = FlashText(
-                        self,
-                        "GOODBYE AND HAVE A NICE DAY!",
-                        Point(125, 400),
-                        0, 24, 15, 20,
-                        textcolor='green', size=20
-                    )
-        return goodbye
+    def _printMessage(self, text, point, maxChar, xSpace, size=20):
 
-    def _continueMessage(self, locationStart):
+        """Print a message on screen with properties"""
+        #def __init__(self, window, text, startPosition, delay, restartNum, spaceX, spaceY, **props):
+        self._tempTextElement = FlashText(
+                                self,
+                                text,
+                                point,
+                                0, maxChar, xSpace, 20,
+                                textcolor='green', size=size
+                            )
+        return self._tempTextElement
+
+    def _userMessage(self, text, locationStart, size=12):
 
         """Function to print if the user wish to continue and validates input
+            - text (str): The text to display
             - locationStart (point): Where the message will start"""
         
-        textField = Text(locationStart, "Do you wish to continue? (y/n)")
-        defineTextProps(textField, textcolor='green')
+        # create text field and entry for question
+        textField = Text(locationStart, text)
+        defineTextProps(textField, textcolor='green', size=size)
         textField.draw(self)
-        entryField = Entry(Point(locationStart.getX()+150, 
-                                 locationStart.getY()), 15)
+        extraX = extraY = 0
+        if len(text) > 30:
+            extraX = -150
+            extraY = 30
+        entryField = Entry(Point(locationStart.getX()+(size*12) + extraX, 
+                                 locationStart.getY()+extraY), 15)
         defineProps(entryField, fill='white')
         entryField.draw(self)
         return textField, entryField
@@ -374,18 +408,30 @@ class MainDisplay(graphics.GraphWin):
 
         self.after(timeInterval, function, *args)
 
-    @errorCheckText(['y', 'n'], Point(300, 535))
-    def _handleEnterWithText(self, textField):
+    def _askUserQuestion(self, text, location, options, size=12):
 
-        """Wait for user to press Enter key,
-           then print appropriate message"""
+        """Kind of weird way to do this, but 
+           want to user wrapper to check any input possible;
+           this returns the input by user, the text field and entry"""
 
+        question, entry = self._userMessage(text, location, size)
+
+        @errorCheckText(Point(300, 535), options)
+        def askQuestion(window, field): 
+            return self._waitUntilEnter(field)
+
+        userInput = askQuestion(self, entry)
+        return userInput, question, entry
+
+    def _waitUntilEnter(self, textField):
+
+        """Function that gets the input from the user"""
         key = ''
         while key != 'Return':
             try:
                 key = self.getKey()
             except:
-                sys.exit()
+                os._exit(1)
         textEntered = textField.getText()
         textField.setText('')
         return textEntered
@@ -543,7 +589,7 @@ class FlashText():
             try:    
                 textElement.draw(self._window)
             except:
-                sys.exit()
+                os._exit(1)
             self._characters.append(textElement)
             currentPosition = Point(currentPosition.getX()+spaceX, currentPosition.getY())
             currentCharNum = currentCharNum + 1
@@ -554,6 +600,11 @@ class FlashText():
         """Undraw the objects"""
         for character in self._characters:
             character.undraw()
+
+
+# The below are functions with a specific purpose of producing
+# sub screens associate with the menu screen; They are expected
+# to have a short life span and are triggered when the appropriate button is pressed
 
 subScreenProps = {
     'foreground': 'green',

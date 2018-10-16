@@ -16,10 +16,8 @@ from gameplay import Game
 from display import MainDisplay
 from music import Music
 from thread import Thread
-
-class WindowClosed(Exception):
-    """Exception raised when screen is no longer active"""
-    pass
+import signal
+import os
 
 def createGameandDisplay(themeSong):
 
@@ -35,16 +33,16 @@ def createGameandDisplay(themeSong):
     musicInstance = Music(themeSong)
     return gameInstance, displayInstance, musicInstance
 
-def continueForever(display):
-    
-    """Keep reading forever,
-       until the screen is no longer active"""
-    while True:
-        try:
-            mouse = display.getMouse()
-        except Exception:
-            import sys
-            sys.exit()
+def exitSystem(signal, frame):
+
+    """Function to catch a signal interrupt
+        and to exit the program;
+        This is used to pleasantly exit the system if the user
+        presses CNTRL+C. This is needed because program is running
+        multiple threads, and if key is pressed in middle, exceptions are thrown
+        This is used to protect against that happening."""
+    os._exit(1)
+
 
 def startThreads(gameInstance, displayInstance, musicInstance):
 
@@ -58,10 +56,10 @@ def startThreads(gameInstance, displayInstance, musicInstance):
     Returns: None
     '''
 
+    signal.signal(signal.SIGINT, exitSystem)
     musicThread = Thread("musicThread", 3, musicInstance.playThemeMusic, displayInstance)
     gameplayThread = Thread("playthread", 2, gameInstance.playGame, displayInstance)
     displayInstance.updateScene(gameInstance)
-    continueForever(displayInstance)
 
 def main():
 

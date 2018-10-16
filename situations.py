@@ -4,6 +4,6 @@ obstacles = [
 ]
 
 collections = [
-    "You just found Ravenclaw's lost diadem! Horocrux down!",
+    "You just found Ravenclaw's lost diadem! Horcrux down!",
     ""
 ]

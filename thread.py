@@ -27,7 +27,6 @@ class Thread(threading.Thread):
         self._priority = priority
         self.callbackFunc = callback
         self.startThread()
-        self.joinThread()
 
     def __repr__(self):
 
