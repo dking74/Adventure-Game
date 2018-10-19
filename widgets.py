@@ -4,12 +4,10 @@ import graphics
 
 #properties of a general button
 buttonProps = {
-    'highlightthickness': '2px', 
-    'highlightbackground': 'black', 
+    'highlightthickness': '2px',  
     'width': 9, 
     'height': 2,
-    'background': 'black',
-    'relief': 'sunken'
+    'relief': 'raised'
 }
 
 class ButtonState(Enum):

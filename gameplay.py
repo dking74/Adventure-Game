@@ -1,12 +1,18 @@
 from enum import Enum
+from thread import threadSemaphore
 from situations import *
 from characters import *
+from fight import Fight
+import time
+import random
 
 class GameState(Enum):
     NOTYET = 0
     PLAYING = 1
     PAUSED = 2
-    END = 3
+    RESULT = 3
+    AGAIN = 4
+    END = 5
 
 class Game():
 
@@ -26,14 +32,22 @@ class Game():
         self.character = Character()
         self._state = GameState.NOTYET
         self._displayMessage = None
+        self._continueMessage = None
+        self._eventType = None
+        self._userInput = None
+        self._action = None
         self._wins = 0
         self._losses = 0
         self._averageMoveCount = 0
+        self._stepsLeft = 10
+        self._horcruxesLeft = 3
+        self._enemiesLeft = 2
+        self.fight = None
 
     def __repr__(self):
 
         """Provide a string representation of the instance"""
-        return "Game(Character='{}', State='{}', Wins='{}', Losses='{}')".format(self._character.characterName, self._state, self._wins, self._losses)
+        return "Game(Character='{}', State='{}', Wins='{}', Losses='{}')".format(self.character.characterName, self._state, self._wins, self._losses)
 
     @property
     def state(self):
@@ -66,63 +80,147 @@ class Game():
            to win or lose"""
         return self._averageMoveCount
 
+    @property
+    def horcruxCount(self):
+
+        """Getter to get the horcrux found number"""
+        return self._horcruxesLeft
+
+    @horcruxCount.setter
+    def horcruxCount(self, newCount):
+
+        """Setter to change the horcrux count"""
+        self._horcruxesLeft = newCount
+
+    @property
+    def enemiesLeft(self):
+
+        """Getter to determine if enemy limit has been reached"""
+        return self._enemiesLeft
+
+    @enemiesLeft.setter
+    def enemiesLeft(self, newCount):
+
+        """Setter to set new enemy count"""
+        self._enemiesLeft = newCount
+
+    def setUserInput(self, inputMessage):
+
+        """Setter for the function input"""
+        self._userInput = inputMessage
+
+    def setContinueInput(self, inputMessage):
+
+        """Setter to determine if user wants to continue"""
+        self._continueMessage = inputMessage
+
     def getDisplayMessage(self):
 
         """Returns the current display message for 
            game"""
         return self._displayMessage
 
+    def getEventType(self):
+
+        """Returns the curret event type for the game"""
+        return self._eventType
+
+    def getStepsLeft(self):
+
+        """Returns the number of steps left"""
+        return self._stepsLeft
+
     def _generateGameSituation(self):
 
         """Function that generates a situation for the user to be in"""
-        pass
+        threadSemaphore.lock()
+        situationChoice = random.choice([obstacles, downgrades, horcruxes, enhancements])
+        possibleChoices = [message for message in situationChoice['data']]
+        message = random.choice(possibleChoices)
+
+        while self._displayMessage == message:
+            message = random.choice(possibleChoices)
+        
+        # set event type and display message to access in display
+        # decrease the number of steps the user has
+        self._eventType = situationChoice['type']
+        self._displayMessage = message[0]
+        self._action = message[1]
+        self._stepsLeft = self._stepsLeft - 1
+        threadSemaphore.unlock()
+
+    def _fightEnemy(self, enemyName, enemyStats, characterPlaying):
+
+        '''
+        Purpose: To handle fighting an enemy
+        Parameters:
+            - enemyName (str): The name of the enemy
+            - enemyStats (dict): The stats of the enemy
+            - characterPlaying (Character): The character that was chosen
+        Returns: None
+        '''
+
+        self.fight = Fight(enemyName, enemyStats, characterPlaying)
+        self.fight.fight()
+        if self.fight.fightResult == 'win':
+            self._enemiesLeft -= 1
+        threadSemaphore.unlock()
+        time.sleep(.2)
+
+        # this is just to wait until display receives result
+        #threadSemaphore.lock()
+        #threadSemaphore.unlock()
+
+    def _horcruxChange(self):
+
+        """To handle a horcrux event"""
+        self._horcruxesLeft -= 1
+
+    def _handleGameSituation(self):
+
+        """Function that determines how to handle the
+           given game situation"""
+        threadSemaphore.lock()
+        if self._eventType == 'obstacles' and self._userInput == '1':
+            self._fightEnemy(self._action, enemies[self._action], self.character)
+        elif self._eventType == 'obstacles' and self._userInput == '2':
+            self._state = GameState.RESULT
+        else:
+            threadSemaphore.unlock()
+
+    def _endGame(self):
+
+        """Function to end the game and send
+           signal to display to do so"""
+        threadSemaphore.lock()
+        if self._continueMessage == 'n' or \
+           self._horcruxesLeft == 0 or \
+           self._enemiesLeft == 0:
+            self._state = GameState.RESULT
+        threadSemaphore.unlock()
 
     def playGame(self, displayInstance):
         
         """Run the game until the end has reached"""
         while self._state != GameState.END:
-            if GameState.PLAYING:
+            if self._state == GameState.PLAYING:
+                # send a message to display
+                self._generateGameSituation()
+                # sleep briefly to allow other thread to take control of semaphore
+                time.sleep(.2)
+                # receive user input from display
+                self._handleGameSituation()
+                time.sleep(.2)
+                self._endGame()
+            elif self._state == GameState.PAUSED:
                 pass
-            elif GameState.PAUSED:
-                pass
+            elif self._state == GameState.RESULT:
+                # nothing to do here; wait until display is done displaying
+                #time.sleep(.2)
+                #threadSemaphore.lock()
+                #threadSemaphore.unlock()
+                self._state = GameState.AGAIN
+            elif self._state == GameState.AGAIN:
+                print("In again in game state")
+            time.sleep(.1)
 
-class Character():
-
-    """Class to handle character attributes"""
-    def __init__(self):
-        self._characterName = ""
-        self._characterStrength = ""
-        self._characterHealth = 50
-        self._characterPower = 50
-        self._characterSmarts = 50
-
-    @property
-    def strength(self):
-
-        """Get the character strength"""
-        return self._characterStrength
-
-    @strength.setter
-    def strength(self, strength):
-
-        """Set the character strength"""
-        self._characterStrength = intToStrength[strength]
-
-    @property
-    def characterName(self):
-
-        """Getter to get the current character name"""
-        return self._mainCharacter
-
-    @characterName.setter
-    def characterName(self, characterName):
-
-        """A setter to set the character name"""
-        self._mainCharacter = characterName
-
-# dictionary to convert number to strength
-intToStrength = {
-    '1': 'Health',
-    '2': 'Power',
-    '3': 'Smarts'
-}

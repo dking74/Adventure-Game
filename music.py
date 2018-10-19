@@ -20,12 +20,13 @@ class Music():
         """Function to install Pygame if not already installed"""
         try:
             import pygame
-        except ImportError:
-            try:    
-                import os
-                os.system('python3 -m pip install -U pygame --user')
-            except Exception:
-                return False
+        except ImportError:    
+            import os
+            osCall = os.system('pip3 install pygame')
+            if osCall != 0:
+                osCall = os.system('pip install pygame')
+                if osCall != 0:
+                    return False
         return True
 
     def _initializeMusic(self):

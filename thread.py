@@ -1,6 +1,7 @@
 import threading
 from enum import Enum
 
+
 class Thread(threading.Thread):
     
     '''
@@ -55,7 +56,7 @@ class Semaphore():
 
     def __init__(self):
 
-        self.locking = threading.Lock()
+        self.locking = threading.RLock()
 
     def lock(self):
 
@@ -66,3 +67,6 @@ class Semaphore():
 
         """Unlock access"""
         self.locking.release()
+
+# create a semaphore for locking
+threadSemaphore = Semaphore()
