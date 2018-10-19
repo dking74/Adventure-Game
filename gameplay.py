@@ -9,10 +9,9 @@ import random
 class GameState(Enum):
     NOTYET = 0
     PLAYING = 1
-    PAUSED = 2
-    RESULT = 3
-    AGAIN = 4
-    END = 5
+    RESULT = 2
+    AGAIN = 3
+    END = 4
 
 class Game():
 
@@ -38,11 +37,14 @@ class Game():
         self._action = None
         self._wins = 0
         self._losses = 0
+        self._totalMovesMade = 0
         self._averageMoveCount = 0
         self._stepsLeft = 10
         self._horcruxesLeft = 3
         self._enemiesLeft = 2
         self.fight = None
+        self._againMessage = ""
+        self._lastResult = ""
 
     def __repr__(self):
 
@@ -103,6 +105,16 @@ class Game():
 
         """Setter to set new enemy count"""
         self._enemiesLeft = newCount
+
+    def setResultMessage(self, resultMessage):
+
+        """Setter to set the result of the game"""
+        self._lastResult = resultMessage
+
+    def setAgainMessage(self, againMessage):
+
+        """Setter for display to set again message"""
+        self._againMessage = againMessage
 
     def setUserInput(self, inputMessage):
 
@@ -167,9 +179,13 @@ class Game():
         threadSemaphore.unlock()
         time.sleep(.2)
 
-        # this is just to wait until display receives result
-        #threadSemaphore.lock()
-        #threadSemaphore.unlock()
+    def _noFightSelected(self):
+
+        """For when the user selects he does not wish to fight"""
+        self.character.characterHealth -= 20
+        self.character.characterPower -= 1
+        threadSemaphore.unlock()
+        time.sleep(.1)
 
     def _horcruxChange(self):
 
@@ -184,7 +200,7 @@ class Game():
         if self._eventType == 'obstacles' and self._userInput == '1':
             self._fightEnemy(self._action, enemies[self._action], self.character)
         elif self._eventType == 'obstacles' and self._userInput == '2':
-            self._state = GameState.RESULT
+            self._noFightSelected()
         else:
             threadSemaphore.unlock()
 
@@ -200,6 +216,15 @@ class Game():
             self._state = GameState.RESULT
         threadSemaphore.unlock()
 
+    def _reinitializeBeginning(self):
+
+        """Function to reinitialize character back to normal"""
+        self.character.characterHealth = 75
+        self.character.characterPower = 5
+        self.character.characterSmarts = 5
+        self.character.characterName = ""
+        self._state = GameState.PLAYING
+
     def playGame(self, displayInstance):
         
         """Run the game until the end has reached"""
@@ -212,16 +237,28 @@ class Game():
                 # receive user input from display
                 self._handleGameSituation()
                 time.sleep(.2)
+                #determine if game should be ended
                 self._endGame()
-            elif self._state == GameState.PAUSED:
-                pass
             elif self._state == GameState.RESULT:
-                # nothing to do here; wait until display is done displaying
-                #time.sleep(.2)
-                #threadSemaphore.lock()
-                #threadSemaphore.unlock()
+                time.sleep(.1)
+                threadSemaphore.lock()
+
+                # calculate new overall game statistics
+                if self._lastResult == "win": 
+                    self._wins += 1
+                else: 
+                    self._losses += 1
+                self._totalMovesMade += (10 - self._stepsLeft)
+                self._averageMoveCount = self._totalMovesMade / (self._wins + self._losses)
+                threadSemaphore.unlock()
                 self._state = GameState.AGAIN
             elif self._state == GameState.AGAIN:
-                print("In again in game state")
+                time.sleep(.1)
+                threadSemaphore.lock()
+                if self._againMessage == 'y':
+                    self._reinitializeBeginning() 
+                else:
+                    self._state = GameState.END
+                threadSemaphore.unlock()      
             time.sleep(.1)
 

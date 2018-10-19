@@ -42,8 +42,8 @@ class Fight():
 
     def _getFightMove(self, spellCaster):
 
-        """Function to generate a random move
-           that is made by user"""
+        """Function to generate a random spell move
+           that is made by character"""
         spellInfo = random.choice(spells)
         spellCasted = list(spellInfo.keys())[0]
         spellDamage = list(spellInfo.values())[0]
@@ -52,7 +52,7 @@ class Fight():
         healthLeft = 0
         spellReceiver = ""
 
-        # determine if the spell hit 
+        # determine if the spell hit the other user
         hit = False
         if spellHit == 'hit':
             hit = True
@@ -63,24 +63,31 @@ class Fight():
             if hit: 
                 overallDamage = self._character.characterPower * spellDamage
                 self._enemyStats['healthRating'] = self._enemyStats['healthRating'] - overallDamage
+                if self._enemyStats['healthRating'] <= 0: self._enemyStats['healthRating'] = 0
                 healthLeft = self._enemyStats['healthRating']
         else:
             spellReceiver = self._character.characterName
             if hit: 
                 overallDamage = self._enemyStats['powerRating'] * spellDamage
                 self._character.characterHealth  = self._character.characterHealth  - overallDamage
+                if self._character.characterHealth <= 0: self._character.characterHealth = 0
                 healthLeft = self._character.characterHealth 
 
-        print(overallDamage)
+        print("Damage to {} is: {}".format(spellReceiver, overallDamage))
+        self._generateMoveMessage(spellCaster, spellCasted, spellReceiver, spellHit, overallDamage, healthLeft)
 
-        if healthLeft < 0: healthLeft = 0
+    def _generateMoveMessage(self, spellCaster, spellCasted, spellReceiver, spellHit, overallDamage, healthLeft):
+
+        """Function that generates the message to be displayed 
+           to screen about result of move"""
+
         self._fightMessage = (
             "{} casted a {} spell. The result was a {}. ".format(spellCaster, spellCasted, spellHit)
         )
         addedMessage = "{} points in damage was done and {} has {} health points left.".format(overallDamage, spellReceiver, healthLeft) if spellHit == 'hit' else \
                        "No damage was done to {}".format(spellReceiver)
         self._fightMessage = self._fightMessage + addedMessage
-                    
+
     def _determineFightResult(self):
 
         """Determine who won the fight and next steps"""
@@ -89,6 +96,7 @@ class Fight():
             self._fightResult = 'lose'
         elif self._enemyStats['healthRating'] <= 0:
             self._fightResult = 'win'
+            self._character.characterHealth += 20
         else:
             self._fightResult = 'tie'        
 
@@ -107,14 +115,16 @@ class Fight():
         
         """Function to simulate a fight
            between the current character and enemy"""
-        moves = 1
         firstMove = True
         fightMoves = 5
         while fightMoves > 0 and self._enemyStats['healthRating'] > 0 and self._character.characterHealth > 0:
         
-            print(dict(healthRating=self._character.characterHealth, powerRating=self._character.characterPower, smartsRating=self._character.characterSmarts))
             firstMove = self._lockOnFirstMove(firstMove)
+            print("Enemy After: ")
+            print(self._enemyStats)
             self._getFightMove(self._character.characterName)
+            print("Enemy After: ")
+            print(self._enemyStats)
             # if last move resulted in bad health for enemy, exit fight
             if self._enemyStats['healthRating'] <= 0:
                 threadSemaphore.unlock()
@@ -123,12 +133,14 @@ class Fight():
             # make sure that other thread takes control of lock first so pause briefly
             time.sleep(.3)
             threadSemaphore.lock()
-            print(self._enemyStats)
+            print("Character After: ")
+            print(dict(healthRating=self._character.characterHealth, powerRating=self._character.characterPower, smartsRating=self._character.characterSmarts))
             self._getFightMove(self._enemy)
+            print("Character After: ")
+            print(dict(healthRating=self._character.characterHealth, powerRating=self._character.characterPower, smartsRating=self._character.characterSmarts))
             fightMoves = fightMoves - 1
             threadSemaphore.unlock()
             time.sleep(.3)
-            moves = moves + 1
 
         # get the result of the fight
         threadSemaphore.lock()

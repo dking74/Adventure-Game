@@ -39,7 +39,8 @@
 #
 #       When testing the program on a Windows computer, my flashing text is able to be deleted
 #       much quicker than when on my mac. This could create a timing issue in when the messages
-#       are displayed.
+#       are displayed. I would not consider this program 'thread-safe' in the early stages of 
+#       development, and much more testing would be needed to perfect this program.
 #
 #       Additionally, 'pygame' is needed. The program should be able to install it for you,
 #       but if not, the music will not play how it is supposed to.
