@@ -1,6 +1,14 @@
 import threading
 from enum import Enum
 
+"""
+These classes are basically wrappers for other built-in classes.
+I like looking at my own code better and decided to create wrapper
+classes so that I can look and analyze my own code
+
+Also, I start the thread within the constructor instead of having
+to call it later everytime a thread is created.
+"""
 
 class Thread(threading.Thread):
     
@@ -52,8 +60,8 @@ class Thread(threading.Thread):
         self.join(timeout=timeout)
 
 class Semaphore():
-    """A class with the ability to lock threads"""
 
+    """A class with the ability to lock threads"""
     def __init__(self):
 
         self.locking = threading.RLock()

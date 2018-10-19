@@ -35,6 +35,7 @@ class Game():
         self._eventType = None
         self._userInput = None
         self._action = None
+        self.fight = None
         self._wins = 0
         self._losses = 0
         self._totalMovesMade = 0
@@ -42,7 +43,6 @@ class Game():
         self._stepsLeft = 10
         self._horcruxesLeft = 3
         self._enemiesLeft = 2
-        self.fight = None
         self._againMessage = ""
         self._lastResult = ""
 
@@ -159,7 +159,30 @@ class Game():
         self._displayMessage = message[0]
         self._action = message[1]
         self._stepsLeft = self._stepsLeft - 1
+        self._updateOnAction()
         threadSemaphore.unlock()
+
+    def _updateOnAction(self):
+
+        """If a situation has an action associated, take that action"""
+
+        def takeAction(positive):
+
+            """Take action appropriate for category"""
+            keyAction = list(self._action.keys())[0] 
+            valAction = list(self._action.values())[0]
+            addVal = valAction if positive else -valAction
+            if keyAction == 'health':
+                self.character.characterHealth = self.character.characterHealth + addVal
+            elif keyAction == 'power':
+                self.character.characterPower = self.character.characterPower + addVal
+            elif keyAction == 'smarts':
+                self.character.characterSmarts = self.character.characterSmarts+ addVal    
+
+        if self._eventType == 'enhancements':
+            takeAction(True)
+        elif self._eventType == 'downgrades':
+            takeAction(False)
 
     def _fightEnemy(self, enemyName, enemyStats, characterPlaying):
 
@@ -223,13 +246,46 @@ class Game():
         self.character.characterPower = 5
         self.character.characterSmarts = 5
         self.character.characterName = ""
-        self._state = GameState.PLAYING
+        self._displayMessage = None
+        self._continueMessage = None
+        self._eventType = None
+        self._userInput = None
+        self._action = None
+        self.fight = None
+        self._stepsLeft = 10
+        self._horcruxesLeft = 3
+        self._enemiesLeft = 2
+        self._againMessage = ""
+        self._lastResult = ""
+
+    def _newGameStats(self):
+
+        """Function to update game statistics"""
+        if self._lastResult == "win": 
+            self._wins += 1
+        else: 
+            self._losses += 1
+        self._totalMovesMade += (10 - self._stepsLeft)
+        self._averageMoveCount = self._totalMovesMade / (self._wins + self._losses)
+
+    def _playAgain(self):
+
+        """Function to determine if should play again"""
+        if self._againMessage == 'y':
+            self._reinitializeBeginning() 
+        else:
+            self._state = GameState.END
 
     def playGame(self, displayInstance):
         
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
+                print(self.character.characterHealth)
+                print(self.character.characterPower)
+                print(self.character.characterSmarts)
+                print()
+
                 # send a message to display
                 self._generateGameSituation()
                 # sleep briefly to allow other thread to take control of semaphore
@@ -242,23 +298,13 @@ class Game():
             elif self._state == GameState.RESULT:
                 time.sleep(.1)
                 threadSemaphore.lock()
-
-                # calculate new overall game statistics
-                if self._lastResult == "win": 
-                    self._wins += 1
-                else: 
-                    self._losses += 1
-                self._totalMovesMade += (10 - self._stepsLeft)
-                self._averageMoveCount = self._totalMovesMade / (self._wins + self._losses)
+                self._newGameStats()
                 threadSemaphore.unlock()
                 self._state = GameState.AGAIN
             elif self._state == GameState.AGAIN:
                 time.sleep(.1)
                 threadSemaphore.lock()
-                if self._againMessage == 'y':
-                    self._reinitializeBeginning() 
-                else:
-                    self._state = GameState.END
+                self._playAgain()
                 threadSemaphore.unlock()      
             time.sleep(.1)
 

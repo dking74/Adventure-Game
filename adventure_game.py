@@ -9,9 +9,31 @@
 #           : This will not work without them
 #           : One dependency is pygame (The program should
 #           : install it upon startup, but if not will
-#           : need to be installed to work).
+#           : need to be installed to work correctly).
 #           : The program should run without errors, but
 #           : if one occurs, it is due to data exchange in threads
+#        UPDATE: 
+#           : The program will work without pygame, but exception is thrown
+#
+#   ADDITIONALLY:
+#           : I kind of made an interesting design choice in letting
+#           : the GUI drive the behavior of the background threads.
+#           : This is how it normally works, but I don't think I had
+#           : the best plan at the start in how to share variables
+#           : and change the state machine in the game thread. As a result,
+#           : I think I kind of eliminated some encapsulation features by
+#           : exposing instance variables of the game thread too much.
+#           : While this generally needs to occur with threads, so that
+#           : data is available between them, I think I could have done a 
+#           : much better job of hiding variables and only exposing them within
+#           : the class itself. The Display class also could be broken up better
+#           : into separate classes to better understand the class itself, but
+#           : I ran out of time to do this. With more time, the code would look
+#           : much cleaner, would be more practical and maintable, and more scalable.
+#           : I also had stretches where I was inconsistent in how I update variables...
+#           : I believe I update sometimes in Display class and others in the Game class.
+#           : That being said, the code is still decently written, with some flaws along the way
+#           : from a professional perspective.
 #
 #   Extra Credit Reasons:
 #       1. Created a full-fledged GUI to interact with user
@@ -73,7 +95,7 @@ def exitSystem(signal, frame):
     """Function to catch a signal interrupt
         and to exit the program;
         This is used to pleasantly exit the system if the user
-        presses CNTRL+C. This is needed because program is running
+        presses CTRL+C. This is needed because program is running
         multiple threads, and if key is pressed in middle, exceptions are thrown
         This is used to protect against that happening."""
     os._exit(1)

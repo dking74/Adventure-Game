@@ -4,6 +4,8 @@ from widgets import MyButton, defineProps, defineTextProps, buttonProps
 from music import Music
 from enum import Enum
 from gameplay import GameState
+from fight import spells
+from situations import obstacles, enhancements, downgrades, horcruxes
 from thread import threadSemaphore
 import tkinter
 import datetime
@@ -130,6 +132,7 @@ class MainDisplay(graphics.GraphWin):
 
             # create a separate display and give properties
             menuDisplay = SubDisplay(self, [], self._pauseButton)
+            #menuDisplay.config(width=300, height=300)
             aboutButton = MyButton(menuDisplay, "About Game", **updateButtonProps)
             aboutButton.config(command=lambda: aboutGame(aboutButton, menuDisplay))
             aboutButton.place(x=0, y=0)
@@ -139,7 +142,10 @@ class MainDisplay(graphics.GraphWin):
             statsButton = MyButton(menuDisplay, "Game Statistics", **updateButtonProps)
             statsButton.config(command=lambda: gameStats(gameInstance, statsButton, menuDisplay))
             statsButton.place(x=0, y=100)
-            MyButton(menuDisplay, "Exit Screen", **updateButtonProps, command=lambda:menuDisplay._destroyWindow()).place(x=0, y=150)
+            spellsButton = MyButton(menuDisplay, "View Spells", **updateButtonProps)
+            spellsButton.config(command=lambda: spellsDisplay(spellsButton, menuDisplay))
+            spellsButton.place(x=0, y=150)
+            MyButton(menuDisplay, "Exit Screen", **updateButtonProps, command=lambda:menuDisplay._destroyWindow()).place(x=0, y=200)
 
         def stopPressed():
             self._stopMusicButton.lastClick = datetime.datetime.now().time()
@@ -797,5 +803,20 @@ def gameStats(gameInstance, button, parentWindow):
     display.addComponents(
         {
             'element': tkinter.Label(display, text=statInfo, padx=100, pady=100, **subScreenProps).pack()
+        }
+    )
+
+def spellsDisplay(button, parentWindow):
+
+    """Use information from spells dictionary to print to screen"""
+    message = ""
+    for spell in spells:
+        tempMessage = "%-20s:          %s points" % (list(spell.keys())[0], str(list(spell.values())[0]))
+        message += "%-s\n" % tempMessage#str(list(spell.values())[0]))
+    parentWindow.withdraw()
+    display = SubDisplay(parentWindow, [], button, title="Spells")
+    display.addComponents(
+        {
+            'element': tkinter.Label(display, width=30, anchor=tkinter.W, text=message, justify=tkinter.LEFT, **subScreenProps).pack(side=tkinter.LEFT, expand=tkinter.NO)
         }
     )

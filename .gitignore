@@ -2,3 +2,5 @@
 bin/
 tmp/
 __pycache__
+.vscode
+*.pyc
