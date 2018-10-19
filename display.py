@@ -316,6 +316,7 @@ class MainDisplay(graphics.GraphWin):
         if textEntered == 'y':
             self._completeFuncAfterTime(4000, self._printMessage, "Great! Let's get started", Point(125, 375), 25, 15, 3500, .01)
             self._deleteObject(welcomeText)
+            time.sleep(1)
             self._changeState(DisplayState.REGPLAY)
         else:
             self._closeProcess(welcomeText)     
@@ -491,7 +492,7 @@ class MainDisplay(graphics.GraphWin):
                                 self,
                                 text,
                                 point,
-                                textDelay, maxChar, xSpace, 20,
+                                textDelay, maxChar, xSpace+1, 20,
                                 textcolor='green', size=size
                             )
         

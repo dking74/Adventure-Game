@@ -73,7 +73,6 @@ class Fight():
                 if self._character.characterHealth <= 0: self._character.characterHealth = 0
                 healthLeft = self._character.characterHealth 
 
-        print("Damage to {} is: {}".format(spellReceiver, overallDamage))
         self._generateMoveMessage(spellCaster, spellCasted, spellReceiver, spellHit, overallDamage, healthLeft)
 
     def _generateMoveMessage(self, spellCaster, spellCasted, spellReceiver, spellHit, overallDamage, healthLeft):

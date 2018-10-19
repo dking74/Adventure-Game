@@ -281,10 +281,10 @@ class Game():
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
-                print(self.character.characterHealth)
-                print(self.character.characterPower)
-                print(self.character.characterSmarts)
-                print()
+                # print(self.character.characterHealth)
+                # print(self.character.characterPower)
+                # print(self.character.characterSmarts)
+                # print()
 
                 # send a message to display
                 self._generateGameSituation()
