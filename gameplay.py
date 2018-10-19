@@ -195,7 +195,8 @@ class Game():
         threadSemaphore.lock()
         if self._continueMessage == 'n' or \
            self._horcruxesLeft == 0 or \
-           self._enemiesLeft == 0:
+           self._enemiesLeft == 0 or \
+           self.character.characterHealth <= 0:
             self._state = GameState.RESULT
         threadSemaphore.unlock()
 

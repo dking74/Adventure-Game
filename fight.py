@@ -14,10 +14,7 @@ class Fight():
         self._fightOn = True
         self._fightMessage = ""
         self._fightResult = ""
-        self._player = character.characterName
-        self._playerStats = dict(healthRating=character.characterHealth,
-                                 powerRating=character.characterPower,
-                                 smartsRating=character.characterSmarts)
+        self._character = character
 
     @property
     def fightOn(self):
@@ -61,18 +58,18 @@ class Fight():
             hit = True
 
         # determine who loses points
-        if spellCaster == self._player:
+        if spellCaster == self._character.characterName:
             spellReceiver = self._enemy
             if hit: 
-                overallDamage = self._playerStats['powerRating'] * spellDamage
+                overallDamage = self._character.characterPower * spellDamage
                 self._enemyStats['healthRating'] = self._enemyStats['healthRating'] - overallDamage
                 healthLeft = self._enemyStats['healthRating']
         else:
-            spellReceiver = self._player
+            spellReceiver = self._character.characterName
             if hit: 
                 overallDamage = self._enemyStats['powerRating'] * spellDamage
-                self._playerStats['healthRating'] = self._playerStats['healthRating'] - overallDamage
-                healthLeft = self._playerStats['healthRating'] 
+                self._character.characterHealth  = self._character.characterHealth  - overallDamage
+                healthLeft = self._character.characterHealth 
 
         print(overallDamage)
 
@@ -88,12 +85,23 @@ class Fight():
 
         """Determine who won the fight and next steps"""
         self._fightOn = False
-        if self._playerStats['healthRating'] <= 0:
+        if self._character.characterHealth <= 0:
             self._fightResult = 'lose'
         elif self._enemyStats['healthRating'] <= 0:
             self._fightResult = 'win'
         else:
             self._fightResult = 'tie'        
+
+    def _lockOnFirstMove(self, firstMove):
+
+        """Kind of a weird function, but this tells if
+           this is the first move by the user; main thread locks up semaphore
+           and we do not want to lock up again if user first round of fight"""
+        if firstMove:
+            firstMove = False
+        else:
+            threadSemaphore.lock()
+        return firstMove
 
     def fight(self):
         
@@ -102,15 +110,17 @@ class Fight():
         moves = 1
         firstMove = True
         fightMoves = 5
-        while fightMoves > 0 and self._enemyStats['healthRating'] > 0 and self._playerStats['healthRating'] > 0:
+        while fightMoves > 0 and self._enemyStats['healthRating'] > 0 and self._character.characterHealth > 0:
         
-            print(self._playerStats)
-            if firstMove:
-                firstMove = False
-            else:
-                threadSemaphore.lock()
-            self._getFightMove(self._player)
+            print(dict(healthRating=self._character.characterHealth, powerRating=self._character.characterPower, smartsRating=self._character.characterSmarts))
+            firstMove = self._lockOnFirstMove(firstMove)
+            self._getFightMove(self._character.characterName)
+            # if last move resulted in bad health for enemy, exit fight
+            if self._enemyStats['healthRating'] <= 0:
+                threadSemaphore.unlock()
+                break
             threadSemaphore.unlock()
+            # make sure that other thread takes control of lock first so pause briefly
             time.sleep(.3)
             threadSemaphore.lock()
             print(self._enemyStats)
