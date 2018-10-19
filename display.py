@@ -127,12 +127,13 @@ class MainDisplay(graphics.GraphWin):
             self._pauseButton.lastClick = datetime.datetime.now().time()
             self._pauseButton.pressed = not self._pauseButton.pressed
             updateButtonProps = buttonProps
-            updateButtonProps['width'] = 22
+            updateButtonProps['width'] = 50
             updateButtonProps['height'] = 2
+            updateButtonProps['justify'] = tkinter.CENTER
 
             # create a separate display and give properties
             menuDisplay = SubDisplay(self, [], self._pauseButton)
-            #menuDisplay.config(width=300, height=300)
+            menuDisplay.config(width=450, height=450)
             aboutButton = MyButton(menuDisplay, "About Game", **updateButtonProps)
             aboutButton.config(command=lambda: aboutGame(aboutButton, menuDisplay))
             aboutButton.place(x=0, y=0)
@@ -145,7 +146,19 @@ class MainDisplay(graphics.GraphWin):
             spellsButton = MyButton(menuDisplay, "View Spells", **updateButtonProps)
             spellsButton.config(command=lambda: spellsDisplay(spellsButton, menuDisplay))
             spellsButton.place(x=0, y=150)
-            MyButton(menuDisplay, "Exit Screen", **updateButtonProps, command=lambda:menuDisplay._destroyWindow()).place(x=0, y=200)
+            obstacleButton = MyButton(menuDisplay, "View Obstacles", **updateButtonProps)
+            obstacleButton.config(command=lambda: situationDisplay(obstacles['data'], "Obstacles", obstacleButton, menuDisplay))
+            obstacleButton.place(x=0, y=200)
+            enhancementsButton = MyButton(menuDisplay, "View Enhancements", **updateButtonProps)
+            enhancementsButton.config(command=lambda: situationDisplay(enhancements['data'], "Enhancements", enhancementsButton, menuDisplay))
+            enhancementsButton.place(x=0, y=250)
+            downgradeButton = MyButton(menuDisplay, "View Downgrades", **updateButtonProps)
+            downgradeButton.config(command=lambda: situationDisplay(downgrades['data'], "Downgrades", downgradeButton, menuDisplay))
+            downgradeButton.place(x=0, y=300)
+            horcruxButton = MyButton(menuDisplay, "View Horcruxes", **updateButtonProps)
+            horcruxButton.config(command=lambda: situationDisplay(horcruxes['data'], "Horcruxes", horcruxButton, menuDisplay))
+            horcruxButton.place(x=0, y=350)
+            MyButton(menuDisplay, "Exit Screen", **updateButtonProps, command=lambda:menuDisplay._destroyWindow()).place(x=0, y=400)
 
         def stopPressed():
             self._stopMusicButton.lastClick = datetime.datetime.now().time()
@@ -818,5 +831,21 @@ def spellsDisplay(button, parentWindow):
     display.addComponents(
         {
             'element': tkinter.Label(display, width=30, anchor=tkinter.W, text=message, justify=tkinter.LEFT, **subScreenProps).pack(side=tkinter.LEFT, expand=tkinter.NO)
+        }
+    )
+
+def situationDisplay(dictionaryList, title, button, parentWindow):
+
+    """Use information from specific dictionary to print to screen"""
+    message = ""
+    num = 1
+    for obstacle in dictionaryList:
+        message += "%s. %-20s\n" % (num, obstacle[0])
+        num += 1
+    parentWindow.withdraw()
+    display = SubDisplay(parentWindow, [], button, title=title)
+    display.addComponents(
+        {
+            'element': tkinter.Label(display, anchor=tkinter.W, text=message, justify=tkinter.LEFT, **subScreenProps).pack(side=tkinter.LEFT, expand=tkinter.NO)
         }
     )
