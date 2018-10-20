@@ -313,7 +313,7 @@ class Game():
             elif self._state == GameState.AGAIN:
 
                 # wait until again message received
-                while self._againMessage != 'y' or \
+                while self._againMessage != 'y' and \
                       self._againMessage != 'n': {}
                 threadSemaphore.lock()
                 self._playAgain()
