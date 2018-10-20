@@ -86,6 +86,7 @@ class Fight():
         addedMessage = "{} points in damage was done and {} has {} health points left.".format(overallDamage, spellReceiver, healthLeft) if spellHit == 'hit' else \
                        "No damage was done to {}".format(spellReceiver)
         self._fightMessage = self._fightMessage + addedMessage
+        print(self._fightMessage)
 
     def _determineFightResult(self):
 
