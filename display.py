@@ -362,17 +362,14 @@ class MainDisplay(graphics.GraphWin):
         """Function that loops continuously waiting for game to update
            to find the message to display"""
 
-        # change the game state to be playing to start the other thread execution
-        # make sure thread safe
         self._lastMessage = None
-        threadSemaphore.lock() 
         gameInstance.state = GameState.PLAYING
-        threadSemaphore.unlock()
 
         # dumb, but guarantee other thread obtains lock first
         # so that game message can be received first, then start
-        time.sleep(.5)
+        time.sleep(.1)
         while gameInstance.state == GameState.PLAYING:
+            print("Playing initially in display")
             threadSemaphore.lock()
 
             # check if game has ended after lock acquired

@@ -74,6 +74,10 @@
 #       Additionally, 'pygame' is needed. The program should be able to install it for you,
 #       but if not, the music will not play how it is supposed to.
 #
+#       ONE MORE TIME, I DO NOT GUARANTEE THIS PROGRAM ON A DIFFERENT SYSTEM;
+#       I HAVE GOTTEN MIXED RESULTS ON DIFFERRENT SYSTEMS. IT SHOULD WORK MOSTLY
+#       BUT TIMING IS BOUND TO BE OFF DEPENDING ON SYSTEM
+#
 ##############################################################################################
 
 from gameplay import Game

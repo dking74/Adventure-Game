@@ -90,5 +90,3 @@ class Music():
 
         """Resume the music from pause"""
         pygame.mixer.music.unpause()
-
-    

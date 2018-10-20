@@ -293,17 +293,18 @@ class Game():
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
+                print("Generating initial situation")
                 # send a message to display
                 self._generateGameSituation()
                 # sleep briefly to allow other thread to take control of semaphore
                 time.sleep(1)
                 # receive user input from display
                 self._handleGameSituation()
-                time.sleep(.5)
+                time.sleep(.1)
                 #determine if game should be ended
                 self._endGame()
             elif self._state == GameState.RESULT:
-                time.sleep(.3)
+                time.sleep(.1)
                 threadSemaphore.lock()
                 self._newGameStats()
                 threadSemaphore.unlock()
@@ -314,5 +315,4 @@ class Game():
                 self._playAgain()
                 threadSemaphore.unlock()
                 time.sleep(.5)  
-            time.sleep(.5)
-
+            time.sleep(.1)
