@@ -354,7 +354,6 @@ class MainDisplay(graphics.GraphWin):
         gameInstance.character.characterName = character
         self._printMessage("{}, your game is beginning...".format(character), Point(125, 375), 25, 12, 0, .01, size=18)
         time.sleep(2)
-        print("Game state before scene updated: " + str(gameInstance.state))
         self._updateGameScene(gameInstance)
         self._currentState = DisplayState.RESULT
 
@@ -440,7 +439,6 @@ class MainDisplay(graphics.GraphWin):
             threadSemaphore.lock()
             if not gameInstance.fight.fightOn:
                 break
-            #print ("Got fight message!")
             self._printMessage(gameInstance.fight.fightMessage,
                                messageLocation,
                                30, 9, 3000, .01, 12)

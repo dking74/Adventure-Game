@@ -278,7 +278,6 @@ class Game():
     def _playAgain(self):
 
         """Function to determine if should play again"""
-        print("Again message: " + str(self._againMessage))
         if self._againMessage == 'y':
             self._reinitializeBeginning() 
         else:
