@@ -369,8 +369,6 @@ class MainDisplay(graphics.GraphWin):
         # so that game message can be received first, then start
         time.sleep(.1)
         while gameInstance.state == GameState.PLAYING:
-            # print("Playing initially in display")
-            threadSemaphore.lock()
 
             # check if game has ended after lock acquired
             if gameInstance.state == GameState.RESULT:
@@ -378,12 +376,13 @@ class MainDisplay(graphics.GraphWin):
         
             displayText = gameInstance.getDisplayMessage()
             eventType = gameInstance.getEventType()
+            print("Playing initially in display")
+            threadSemaphore.lock()
             if displayText != self._lastMessage:
                 self._lastMessage = displayText
                 self._determineGameAction(gameInstance, displayText, eventType)
-
             threadSemaphore.unlock()
-            time.sleep(.05)
+            time.sleep(.3)
 
     def _determineGameAction(self, gameInstance, displayText, eventType):
 
