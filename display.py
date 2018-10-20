@@ -500,9 +500,11 @@ class MainDisplay(graphics.GraphWin):
         gameInstance.setAgainMessage(again)
         if again == 'y':
             self._currentState = DisplayState.REGPLAY
+            gameInstance.state = GameState.NOTYET
         else:
             self._printMessage("GOODBYE AND HAVE A NICE DAY!", Point(125, 400), 24, 15, 2000, .01)
             self._currentState = DisplayState.END
+            gameInstance.state = GameState.END
         threadSemaphore.unlock()
 
     def _printMessage(self, text, point, maxChar, xSpace, delay, textDelay, size=20):

@@ -283,6 +283,7 @@ class Game():
     def _playAgain(self):
 
         """Function to determine if should play again"""
+        print("Again messag: " + str(self._againMessage))
         if self._againMessage == 'y':
             self._reinitializeBeginning() 
         else:
@@ -308,7 +309,6 @@ class Game():
                 threadSemaphore.lock()
                 self._newGameStats()
                 threadSemaphore.unlock()
-                self._state = GameState.AGAIN
             elif self._state == GameState.AGAIN:
                 time.sleep(.3)
                 threadSemaphore.lock()
