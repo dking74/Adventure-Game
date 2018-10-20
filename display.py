@@ -377,7 +377,6 @@ class MainDisplay(graphics.GraphWin):
         
             displayText = gameInstance.getDisplayMessage()
             eventType = gameInstance.getEventType()
-            print("Playing initially in display")
             threadSemaphore.lock()
             if displayText != self._lastMessage:
                 self._lastMessage = displayText
@@ -497,7 +496,6 @@ class MainDisplay(graphics.GraphWin):
         time.sleep(.1)
         threadSemaphore.lock()
         again = self._askUserQuestion("Do you want to play again? (y/n)", Point(130, 420), ['y', 'n'], 16)
-        gameInstance.setAgainMessage(again)
         if again == 'y':
             self._currentState = DisplayState.REGPLAY
             gameInstance._againMessage = 'y'

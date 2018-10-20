@@ -112,11 +112,6 @@ class Game():
         """Setter to set the result of the game"""
         self._lastResult = resultMessage
 
-    def setAgainMessage(self, againMessage):
-
-        """Setter for display to set again message"""
-        self._againMessage = againMessage
-
     def setUserInput(self, inputMessage):
 
         """Setter for the function input"""
@@ -294,7 +289,6 @@ class Game():
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
-                print("Generating initial situation")
                 # send a message to display
                 self._generateGameSituation()
                 # sleep briefly to allow other thread to take control of semaphore
@@ -313,18 +307,10 @@ class Game():
             elif self._state == GameState.AGAIN:
 
                 # wait until again message received
-                print("In again state")
-                while self._againMessage == "":
-                    print("waiting on again message to be set")
-                    print("Again message: " + str(self._againMessage))
-                    time.sleep(.5)
+                while self._againMessage == "": {}
 
-                print("again message has been set")
                 threadSemaphore.lock()
-                print("Message after waiting is: " + str(self._againMessage))
                 self._playAgain()
-                print("State after again: " + str(self._state))
                 threadSemaphore.unlock()
-                print("The lock has been released in again")
                 time.sleep(.5)  
             time.sleep(.1)

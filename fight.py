@@ -130,14 +130,14 @@ class Fight():
                 break
             threadSemaphore.unlock()
             # make sure that other thread takes control of lock first so pause briefly
-            time.sleep(.1)
+            time.sleep(.3)
             threadSemaphore.lock()
             #print("Before enemy fight move")
             self._getFightMove(self._enemy)
             #print("After enemy fight move")
             fightMoves = fightMoves - 1
             threadSemaphore.unlock()
-            time.sleep(.1)
+            time.sleep(.3)
 
         # get the result of the fight
         threadSemaphore.lock()
