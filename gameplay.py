@@ -314,9 +314,9 @@ class Game():
 
                 # wait until again message received
                 print("In again state")
-                while self._againMessage != 'y' or \
-                      self._againMessage != 'n':
-                      print("waiting on again message to be set")
+                while self._againMessage != 'y' or self._againMessage != 'n':
+                    print("waiting on again message to be set")
+                    time.sleep(.5)
 
                 print("again message has been set")
                 threadSemaphore.lock()
