@@ -313,10 +313,11 @@ class Game():
             elif self._state == GameState.AGAIN:
 
                 # wait until again message received
-                while self._againMessage != 'y' or \
-                      self._againMessage != 'n': {}
-                print("Message after waiting is: " + str(self._againMessage))
+                print("In again state")
+                # while self._againMessage != 'y' or \
+                #       self._againMessage != 'n': {}
                 threadSemaphore.lock()
+                print("Message after waiting is: " + str(self._againMessage))
                 self._playAgain()
                 print("State after again: " + str(self._state))
                 threadSemaphore.unlock()
