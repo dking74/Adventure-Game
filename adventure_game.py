@@ -46,9 +46,11 @@
 #          it is being typed to. Additionally, multiple text can be printed at same time
 #       8. Created state machines for display and game to handle the synchronization and states
 #           of the two threads
+#       9. Appropriate separation of concerns, following a MVC pattern by separating the display
+#          option and the data option
 #
 #       These are just a few reasons I believe I deserve extra credit;
-#       I don't think any other student put as much effort into this as I did
+#       I don't think any other student put as much effort into this as I did --> Approximately 35 hours
 #
 #   Disclaimer:
 #       I am sure there are going to be features that do not work quite how I want them to
@@ -63,6 +65,10 @@
 #       much quicker than when on my mac. This could create a timing issue in when the messages
 #       are displayed. I would not consider this program 'thread-safe' in the early stages of 
 #       development, and much more testing would be needed to perfect this program.
+#
+#       There is also a difference in timing and formatting between computers... Tested on 
+#       Windows, Linux, and mac, and it works on all of them, but the formatting of letters is 
+#       platform dependent; I can't really combat that at all. 
 #
 #       Additionally, 'pygame' is needed. The program should be able to install it for you,
 #       but if not, the music will not play how it is supposed to.

@@ -4,7 +4,7 @@ import graphics
 
 #properties of a general button
 buttonProps = {
-    'highlightthickness': '2px',  
+    'borderwidth': 3,
     'width': 9, 
     'height': 2,
     'relief': 'raised'

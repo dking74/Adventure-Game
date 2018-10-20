@@ -45,6 +45,7 @@ class Game():
         self._enemiesLeft = 2
         self._againMessage = ""
         self._lastResult = ""
+        self._horcruxesCaptured = []
 
     def __repr__(self):
 
@@ -159,10 +160,10 @@ class Game():
         self._displayMessage = message[0]
         self._action = message[1]
         self._stepsLeft = self._stepsLeft - 1
-        self._updateOnAction()
+        self._updateOnAction(message)
         threadSemaphore.unlock()
 
-    def _updateOnAction(self):
+    def _updateOnAction(self, message):
 
         """If a situation has an action associated, take that action"""
 
@@ -183,6 +184,9 @@ class Game():
             takeAction(True)
         elif self._eventType == 'downgrades':
             takeAction(False)
+        elif self._eventType == 'horcruxes':
+            horcruxes['data'].remove(message)
+            self._horcruxesCaptured.append(message)
 
     def _fightEnemy(self, enemyName, enemyStats, characterPlaying):
 
@@ -212,7 +216,8 @@ class Game():
 
     def _horcruxChange(self):
 
-        """To handle a horcrux event"""
+        """To handle a horcrux event
+           decrease horcrux count and remove horcrux"""
         self._horcruxesLeft -= 1
 
     def _handleGameSituation(self):
@@ -235,7 +240,8 @@ class Game():
         if self._continueMessage == 'n' or \
            self._horcruxesLeft == 0 or \
            self._enemiesLeft == 0 or \
-           self.character.characterHealth <= 0:
+           self.character.characterHealth <= 0 or \
+           self._stepsLeft == 0:
             self._state = GameState.RESULT
         threadSemaphore.unlock()
 
@@ -246,17 +252,23 @@ class Game():
         self.character.characterPower = 5
         self.character.characterSmarts = 5
         self.character.characterName = ""
-        self._displayMessage = None
-        self._continueMessage = None
-        self._eventType = None
-        self._userInput = None
-        self._action = None
+        self._displayMessage = ""
+        self._continueMessage = ""
+        self._eventType = ""
+        self._userInput = ""
+        self._action = ""
         self.fight = None
         self._stepsLeft = 10
         self._horcruxesLeft = 3
         self._enemiesLeft = 2
         self._againMessage = ""
         self._lastResult = ""
+        self.state = GameState.NOTYET
+
+        # this has to be reinitialized because deleting components of
+        # horxcruxes during program so two aren't used
+        for horcrux in self._horcruxesCaptured:
+            horcruxes['data'].append(horcrux)
 
     def _newGameStats(self):
 
@@ -281,18 +293,13 @@ class Game():
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
-                # print(self.character.characterHealth)
-                # print(self.character.characterPower)
-                # print(self.character.characterSmarts)
-                # print()
-
                 # send a message to display
                 self._generateGameSituation()
                 # sleep briefly to allow other thread to take control of semaphore
-                time.sleep(.2)
+                time.sleep(.5)
                 # receive user input from display
                 self._handleGameSituation()
-                time.sleep(.2)
+                time.sleep(.5)
                 #determine if game should be ended
                 self._endGame()
             elif self._state == GameState.RESULT:
@@ -305,6 +312,7 @@ class Game():
                 time.sleep(.1)
                 threadSemaphore.lock()
                 self._playAgain()
-                threadSemaphore.unlock()      
+                threadSemaphore.unlock()
+                time.sleep(.5)  
             time.sleep(.1)
 
