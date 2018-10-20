@@ -316,6 +316,7 @@ class Game():
                 print("In again state")
                 while self._againMessage == "":
                     print("waiting on again message to be set")
+                    print("Again message: " + str(self._againMessage))
                     time.sleep(.5)
 
                 print("again message has been set")
