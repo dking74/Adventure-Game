@@ -369,7 +369,7 @@ class MainDisplay(graphics.GraphWin):
         # so that game message can be received first, then start
         time.sleep(.1)
         while gameInstance.state == GameState.PLAYING:
-            print("Playing initially in display")
+            # print("Playing initially in display")
             threadSemaphore.lock()
 
             # check if game has ended after lock acquired

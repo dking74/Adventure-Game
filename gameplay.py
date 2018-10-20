@@ -293,7 +293,7 @@ class Game():
         """Run the game until the end has reached"""
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
-                print("Generating initial situation")
+                # print("Generating initial situation")
                 # send a message to display
                 self._generateGameSituation()
                 # sleep briefly to allow other thread to take control of semaphore
