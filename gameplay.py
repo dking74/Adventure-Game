@@ -313,6 +313,7 @@ class Game():
                 time.sleep(.3)
                 threadSemaphore.lock()
                 self._playAgain()
+                print("State after again: " + str(self._state))
                 threadSemaphore.unlock()
                 time.sleep(.5)  
             time.sleep(.1)

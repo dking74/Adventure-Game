@@ -354,6 +354,7 @@ class MainDisplay(graphics.GraphWin):
         gameInstance.character.characterName = character
         self._printMessage("{}, your game is beginning...".format(character), Point(125, 375), 25, 12, 0, .01, size=18)
         time.sleep(2)
+        print("Game state before scene updated: " + str(gameInstance.state))
         self._updateGameScene(gameInstance)
         self._currentState = DisplayState.RESULT
 
@@ -367,7 +368,7 @@ class MainDisplay(graphics.GraphWin):
 
         # dumb, but guarantee other thread obtains lock first
         # so that game message can be received first, then start
-        time.sleep(.5)
+        time.sleep(.1)
         while gameInstance.state == GameState.PLAYING:
 
             # check if game has ended after lock acquired
