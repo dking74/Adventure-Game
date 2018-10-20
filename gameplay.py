@@ -283,7 +283,7 @@ class Game():
     def _playAgain(self):
 
         """Function to determine if should play again"""
-        print("Again messag: " + str(self._againMessage))
+        print("Again message: " + str(self._againMessage))
         if self._againMessage == 'y':
             self._reinitializeBeginning() 
         else:
@@ -313,11 +313,13 @@ class Game():
             elif self._state == GameState.AGAIN:
 
                 # wait until again message received
-                while self._againMessage != 'y' and \
+                while self._againMessage != 'y' or \
                       self._againMessage != 'n': {}
+                print("Message after waiting is: " + str(self._againMessage))
                 threadSemaphore.lock()
                 self._playAgain()
                 print("State after again: " + str(self._state))
                 threadSemaphore.unlock()
+                print("The lock has been released in again")
                 time.sleep(.5)  
             time.sleep(.1)

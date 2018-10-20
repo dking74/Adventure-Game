@@ -441,7 +441,7 @@ class MainDisplay(graphics.GraphWin):
             threadSemaphore.lock()
             if not gameInstance.fight.fightOn:
                 break
-            print ("Got fight message!")
+            #print ("Got fight message!")
             self._printMessage(gameInstance.fight.fightMessage,
                                messageLocation,
                                30, 9, 3000, .01, 12)
