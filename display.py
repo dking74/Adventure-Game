@@ -367,7 +367,7 @@ class MainDisplay(graphics.GraphWin):
 
         # dumb, but guarantee other thread obtains lock first
         # so that game message can be received first, then start
-        time.sleep(.3)
+        time.sleep(.5)
         while gameInstance.state == GameState.PLAYING:
 
             # check if game has ended after lock acquired
