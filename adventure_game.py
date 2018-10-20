@@ -68,7 +68,8 @@
 #
 #       There is also a difference in timing and formatting between computers... Tested on 
 #       Windows, Linux, and mac, and it works on all of them, but the formatting of letters is 
-#       platform dependent; I can't really combat that at all. 
+#       platform dependent; I can't really combat that at all. Moving forward, sleeps should
+#       be taken out and better concurrency methods should be taken.
 #
 #       Additionally, 'pygame' is needed. The program should be able to install it for you,
 #       but if not, the music will not play how it is supposed to.

@@ -296,23 +296,23 @@ class Game():
                 # send a message to display
                 self._generateGameSituation()
                 # sleep briefly to allow other thread to take control of semaphore
-                time.sleep(.5)
+                time.sleep(1)
                 # receive user input from display
                 self._handleGameSituation()
                 time.sleep(.5)
                 #determine if game should be ended
                 self._endGame()
             elif self._state == GameState.RESULT:
-                time.sleep(.1)
+                time.sleep(.3)
                 threadSemaphore.lock()
                 self._newGameStats()
                 threadSemaphore.unlock()
                 self._state = GameState.AGAIN
             elif self._state == GameState.AGAIN:
-                time.sleep(.1)
+                time.sleep(.3)
                 threadSemaphore.lock()
                 self._playAgain()
                 threadSemaphore.unlock()
                 time.sleep(.5)  
-            time.sleep(.1)
+            time.sleep(.5)
 

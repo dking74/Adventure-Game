@@ -116,6 +116,7 @@ class Fight():
            between the current character and enemy"""
         firstMove = True
         fightMoves = 5
+        time.sleep(.3)
         while fightMoves > 0 and self._enemyStats['healthRating'] > 0 and self._character.characterHealth > 0:
 
             firstMove = self._lockOnFirstMove(firstMove)
@@ -123,11 +124,11 @@ class Fight():
             # if last move resulted in bad health for enemy, exit fight
             if self._enemyStats['healthRating'] <= 0:
                 threadSemaphore.unlock()
-                time.sleep(.2)
+                time.sleep(.1)
                 break
             threadSemaphore.unlock()
             # make sure that other thread takes control of lock first so pause briefly
-            time.sleep(.2)
+            time.sleep(.1)
             threadSemaphore.lock()
             self._getFightMove(self._enemy)
             fightMoves = fightMoves - 1

@@ -371,7 +371,7 @@ class MainDisplay(graphics.GraphWin):
 
         # dumb, but guarantee other thread obtains lock first
         # so that game message can be received first, then start
-        time.sleep(.2)
+        time.sleep(.5)
         while gameInstance.state == GameState.PLAYING:
             threadSemaphore.lock()
 
@@ -386,7 +386,7 @@ class MainDisplay(graphics.GraphWin):
                 self._determineGameAction(gameInstance, displayText, eventType)
 
             threadSemaphore.unlock()
-            time.sleep(.3)
+            time.sleep(.05)
 
     def _determineGameAction(self, gameInstance, displayText, eventType):
 
@@ -398,7 +398,7 @@ class MainDisplay(graphics.GraphWin):
                 gameInstance.horcruxCount -= 1
                 displayText = displayText + " {} horcruxes remain".format(gameInstance.horcruxCount)
             self._printMessage(displayText, Point(125, 375), 40, 8, 2000, .01, 14)
-            time.sleep(.1)
+            time.sleep(2)
         elif eventType == 'obstacles':
             displayText = displayText + "Do you want to fight (1) or run (2)? "
             userInput = self._askUserQuestion(displayText, Point(125, 375), ['1', '2'])
@@ -416,17 +416,19 @@ class MainDisplay(graphics.GraphWin):
             # can be generated for the fight result
             if userInput == '1':
                 self._printFightMessages(gameInstance)
-
+                
         # print the number of steps left to the user;
         # lock semaphore back up if obstacle event occurred
         if eventType == 'obstacles':
             threadSemaphore.lock()
         stepsLeft = gameInstance.getStepsLeft()
         if stepsLeft > 0:
-            time.sleep(.2)
             displayText = "You have {} steps left. Do you want to continue?".format(stepsLeft)
             userInput = self._askUserQuestion(displayText, Point(125, 485), ['y', 'n'])    
+            threadSemaphore.lock()
             gameInstance.setContinueInput(userInput)
+            threadSemaphore.unlock()
+            time.sleep(.1)
 
     def _printFightMessages(self, gameInstance):
 
@@ -436,6 +438,7 @@ class MainDisplay(graphics.GraphWin):
         # make sure fight has been initialized first
         while not gameInstance.fight: {}
 
+        #start fight, and keep reading messages from game
         messageLocation = Point(125, 375)
         while gameInstance.fight.fightOn:
             threadSemaphore.lock()
@@ -443,8 +446,8 @@ class MainDisplay(graphics.GraphWin):
                 break
             self._printMessage(gameInstance.fight.fightMessage,
                                messageLocation,
-                               30, 9, 2000, .01, 12)
-            time.sleep(2)
+                               30, 9, 3000, .01, 12)
+            time.sleep(3)
             threadSemaphore.unlock()
             time.sleep(.1)
         

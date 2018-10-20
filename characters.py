@@ -58,7 +58,7 @@ class Character():
         """Set the character strength"""
         self._characterStrength = intToStrength[strength]
         if self._characterStrength == 'Health': self.characterHealth = 100
-        elif self._characterStrength == 'Power': self.characterHealth = 15
+        elif self._characterStrength == 'Power': self.characterPower = 15
         elif self._characterStrength == 'Smarts': self.characterSmarts = 20
 
     @property
