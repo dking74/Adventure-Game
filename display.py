@@ -70,7 +70,6 @@ class MainDisplay(graphics.GraphWin):
         self._oldState = DisplayState.END
         self._currentState = DisplayState.START
         self._backgroundImage = backgroundImage
-        self._messagePrinted = True
 
     @property
     def state(self):
@@ -83,18 +82,6 @@ class MainDisplay(graphics.GraphWin):
 
         """Setter for the state of the display"""
         self._dislayState = newState
-
-    @property
-    def isMessagePrinted(self):
-
-        """Getter for game to know if message has been printed"""
-        return self._messagePrinted
-
-    @isMessagePrinted.setter
-    def isMessagePrinted(self, printed):
-
-        """Setter to change status of message printer value"""
-        self._messagePrinted = printed
 
     def _createBackground(self, location):
 
@@ -391,12 +378,9 @@ class MainDisplay(graphics.GraphWin):
             # this is so we don't get same message twice in row; then handle message
             displayText = gameInstance.getDisplayMessage()
             eventType = gameInstance.getEventType()
-            #threadSemaphore.lock()
-            if displayText != self._lastMessage:
+            if displayText != self._lastMessage and displayText != "":
                 self._lastMessage = displayText
                 self._determineGameAction(gameInstance, displayText, eventType)
-            #threadSemaphore.unlock()
-            #time.sleep(.1)
 
     def _determineGameAction(self, gameInstance, displayText, eventType):
 
@@ -434,14 +418,11 @@ class MainDisplay(graphics.GraphWin):
             threadSemaphore.unlock()
         stepsLeft = gameInstance.getStepsLeft()
         if stepsLeft > 0:
-            print("Before locking semaphore to continue message in display")
             threadSemaphore.lock()
             displayText = "You have {} steps left. Do you want to continue?".format(stepsLeft)
             userInput = self._askUserQuestion(displayText, Point(125, 485), ['y', 'n']) 
             gameInstance.setContinueInput(userInput)
-            self._messagePrinted = True
             threadSemaphore.unlock()
-            #time.sleep(2)
 
     def _printFightMessages(self, gameInstance):
 
