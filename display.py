@@ -70,6 +70,7 @@ class MainDisplay(graphics.GraphWin):
         self._oldState = DisplayState.END
         self._currentState = DisplayState.START
         self._backgroundImage = backgroundImage
+        self._messagePrinted = True
 
     @property
     def state(self):
@@ -82,6 +83,18 @@ class MainDisplay(graphics.GraphWin):
 
         """Setter for the state of the display"""
         self._dislayState = newState
+
+    @property
+    def isMessagePrinted(self):
+
+        """Getter for game to know if message has been printed"""
+        return self._messagePrinted
+
+    @isMessagePrinted.setter
+    def isMessagePrinted(self, printed):
+
+        """Setter to change status of message printer value"""
+        self._messagePrinted = printed
 
     def _createBackground(self, location):
 
@@ -374,34 +387,37 @@ class MainDisplay(graphics.GraphWin):
             if gameInstance.state == GameState.RESULT:
                 break
         
+            # determine if the last message is not the same as new message
+            # this is so we don't get same message twice in row; then handle message
             displayText = gameInstance.getDisplayMessage()
             eventType = gameInstance.getEventType()
-            threadSemaphore.lock()
+            #threadSemaphore.lock()
             if displayText != self._lastMessage:
                 self._lastMessage = displayText
                 self._determineGameAction(gameInstance, displayText, eventType)
-            threadSemaphore.unlock()
-            time.sleep(.3)
+            #threadSemaphore.unlock()
+            #time.sleep(.1)
 
     def _determineGameAction(self, gameInstance, displayText, eventType):
 
         """Determine what needs to be printed based on display text
            and event type; also ask user if they wish to continue"""
-
+        threadSemaphore.lock()
         if eventType == 'horcruxes' or eventType == 'enhancements' or eventType == 'downgrades':
             if eventType == 'horcruxes':
                 gameInstance.horcruxCount -= 1
                 displayText = displayText + " {} horcruxes remain".format(gameInstance.horcruxCount)
             self._printMessage(displayText, Point(125, 375), 40, 8, 2000, .01, 14)
             time.sleep(2)
+
+        # handle obstacles by asking if they want to fight or run
+        #then setup loop to retrieve fight messages from them
         elif eventType == 'obstacles':
             displayText = displayText + "Do you want to fight (1) or run (2)? "
             userInput = self._askUserQuestion(displayText, Point(125, 375), ['1', '2'])
             if userInput == '2':
-                self._printMessage(
-                   "The result of not fighting is a power deduction of 1 and health deduction of 20!",
-                   Point(125, 375), 30, 10, 0, .01
-                )
+                self._printMessage("The result of not fighting is a power deduction of 1 and health deduction of 20!",
+                                   Point(125, 375), 24, 15, 0, .01)
             gameInstance.setUserInput(userInput)
             threadSemaphore.unlock()
             time.sleep(.1)
@@ -411,19 +427,21 @@ class MainDisplay(graphics.GraphWin):
             # can be generated for the fight result
             if userInput == '1':
                 self._printFightMessages(gameInstance)
-                
+              
         # print the number of steps left to the user;
-        # lock semaphore back up if obstacle event occurred
-        if eventType == 'obstacles':
-            threadSemaphore.lock()
+        # lock semaphore back up if obstacle event did not occurr
+        if eventType != 'obstacles':
+            threadSemaphore.unlock()
         stepsLeft = gameInstance.getStepsLeft()
         if stepsLeft > 0:
-            displayText = "You have {} steps left. Do you want to continue?".format(stepsLeft)
-            userInput = self._askUserQuestion(displayText, Point(125, 485), ['y', 'n'])    
+            print("Before locking semaphore to continue message in display")
             threadSemaphore.lock()
+            displayText = "You have {} steps left. Do you want to continue?".format(stepsLeft)
+            userInput = self._askUserQuestion(displayText, Point(125, 485), ['y', 'n']) 
             gameInstance.setContinueInput(userInput)
+            self._messagePrinted = True
             threadSemaphore.unlock()
-            time.sleep(.1)
+            #time.sleep(2)
 
     def _printFightMessages(self, gameInstance):
 
@@ -446,6 +464,7 @@ class MainDisplay(graphics.GraphWin):
             threadSemaphore.unlock()
             time.sleep(.1)
         
+        # determine results of the fight
         threadSemaphore.lock()
         result = self._getFightResult(gameInstance)
         self._printMessage(result, messageLocation, 30, 9, 2000, .01, 12)
@@ -465,6 +484,9 @@ class MainDisplay(graphics.GraphWin):
         """Displays the results of the game to user"""
         threadSemaphore.lock()
         result = ""
+
+        # if we have no enemies left or horcruxes, we have won
+        # other wise we have lost; print to screen
         if gameInstance.enemiesLeft == 0 or gameInstance.horcruxCount == 0:
             gameInstance.setResultMessage("win") 
             result = "WIN"

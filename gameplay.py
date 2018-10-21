@@ -138,10 +138,27 @@ class Game():
         """Returns the number of steps left"""
         return self._stepsLeft
 
-    def _generateGameSituation(self):
+    def _shouldGenerateNewMessage(self, displayInstance):
+
+        """Function to determine if new game message should be generated"""
+        hasMessageBeenPrinted = displayInstance.isMessagePrinted
+        print("Has message been printed: " + str(hasMessageBeenPrinted))
+
+        # wait until message has been printed
+        while not hasMessageBeenPrinted:
+            print("Checking message been printed")
+            hasMessageBeenPrinted = displayInstance.isMessagePrinted
+
+        # now change status of flag back to false
+        threadSemaphore.lock()
+        displayInstance.isMessagePrinted = False
+        threadSemaphore.unlock()
+
+    def _generateGameSituation(self, displayInstance):
 
         """Function that generates a situation for the user to be in"""
         threadSemaphore.lock()
+        self._continueMessage = ""
         situationChoice = random.choice([obstacles, downgrades, horcruxes, enhancements])
         possibleChoices = [message for message in situationChoice['data']]
         message = random.choice(possibleChoices)
@@ -198,16 +215,13 @@ class Game():
         self.fight.fight()
         if self.fight.fightResult == 'win':
             self._enemiesLeft -= 1
-        threadSemaphore.unlock()
-        time.sleep(.2)
 
     def _noFightSelected(self):
 
         """For when the user selects he does not wish to fight"""
         self.character.characterHealth -= 20
         self.character.characterPower -= 1
-        threadSemaphore.unlock()
-        time.sleep(.1)
+        #threadSemaphore.unlock()
 
     def _horcruxChange(self):
 
@@ -215,17 +229,24 @@ class Game():
            decrease horcrux count and remove horcrux"""
         self._horcruxesLeft -= 1
 
-    def _handleGameSituation(self):
+    def _handleGameSituation(self, displayInstance):
 
         """Function that determines how to handle the
            given game situation"""
         threadSemaphore.lock()
+        print("Inside game situation lock")
         if self._eventType == 'obstacles' and self._userInput == '1':
             self._fightEnemy(self._action, enemies[self._action], self.character)
         elif self._eventType == 'obstacles' and self._userInput == '2':
             self._noFightSelected()
-        else:
-            threadSemaphore.unlock()
+        threadSemaphore.unlock()
+
+        #determine if game should be ended
+        # wait for continue message to be set in display
+        print("Continue message is: " + str(self._continueMessage))
+        while self._continueMessage == "" and self._stepsLeft != 0: {}
+        print("Continue message after is: " + str(self._continueMessage))
+        self._endGame()
 
     def _endGame(self):
 
@@ -238,6 +259,7 @@ class Game():
            self.character.characterHealth <= 0 or \
            self._stepsLeft == 0:
             self._state = GameState.RESULT
+        self._continueMessage = ""
         threadSemaphore.unlock()
 
     def _reinitializeBeginning(self):
@@ -289,14 +311,16 @@ class Game():
         while self._state != GameState.END:
             if self._state == GameState.PLAYING:
                 # send a message to display
-                self._generateGameSituation()
+                print("About to generate game situation")
+                self._generateGameSituation(displayInstance)
+                print("Generated game situation")
                 # sleep briefly to allow other thread to take control of semaphore
-                time.sleep(1)
-                # receive user input from display
-                self._handleGameSituation()
                 time.sleep(.1)
-                #determine if game should be ended
-                self._endGame()
+                # receive user input from display
+                print("About to handle game situation")
+                self._handleGameSituation(displayInstance)
+                print("Handled game situation")
+                time.sleep(.1)
             elif self._state == GameState.RESULT:
                 time.sleep(.1)
                 threadSemaphore.lock()
