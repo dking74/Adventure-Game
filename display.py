@@ -471,14 +471,12 @@ class MainDisplay(graphics.GraphWin):
                                30, 9, 3000, .01, 12)
             time.sleep(3.5)
             threadSemaphore.unlock()
-            time.sleep(.1)
+            time.sleep(.05)
         
         # determine results of the fight; wait until fight result is determined
         time.sleep(.5)
         threadSemaphore.lock()
-        print("Waiting on fight result...")
         result = self._getFightResult(gameInstance)
-        print("Result is: " + result)
         self._printMessage(result, messageLocation, 30, 9, 2000, .01, 12)
         time.sleep(2)
         threadSemaphore.unlock()

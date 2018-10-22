@@ -196,7 +196,6 @@ class Game():
         '''
 
         self.fight = Fight(enemyName, enemyStats, characterPlaying)
-        print("FIGHT HAS BEEN INITIALIZED")
         self.fight.fight(displayInstance)
         if self.fight.fightResult == 'win':
             self._enemiesLeft -= 1
@@ -220,11 +219,9 @@ class Game():
         threadSemaphore.lock()
         if self._eventType == 'obstacles' and self._userInput == '1':
             self._fightEnemy(displayInstance, self._action, enemies[self._action], self.character)
-            print("After we fought enemy")
         elif self._eventType == 'obstacles' and self._userInput == '2':
             self._noFightSelected()
         threadSemaphore.unlock()
-        print("Lock is gone in handle game function")
 
         # wait for continue message to be set in display
         while not displayInstance.continueSet:
