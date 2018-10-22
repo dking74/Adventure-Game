@@ -471,7 +471,7 @@ class MainDisplay(graphics.GraphWin):
                                30, 9, 3000, .01, 12)
             time.sleep(3.5)
             threadSemaphore.unlock()
-            time.sleep(.05)
+            time.sleep(.1)
         
         # determine results of the fight; wait until fight result is determined
         time.sleep(.5)
