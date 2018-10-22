@@ -30,10 +30,7 @@ class Game():
 
         self.character = Character()
         self._state = GameState.NOTYET
-        self._displayMessage = None
-        self._continueMessage = None
         self._eventType = None
-        self._userInput = None
         self._action = None
         self.fight = None
         self._wins = 0
@@ -43,8 +40,11 @@ class Game():
         self._stepsLeft = 10
         self._horcruxesLeft = 3
         self._enemiesLeft = 2
+        self._userInput = ""
         self._againMessage = ""
         self._lastResult = ""
+        self._displayMessage = ""
+        self._continueMessage = ""
         self._horcruxesCaptured = []
 
     def __repr__(self):
@@ -183,11 +183,12 @@ class Game():
             horcruxes['data'].remove(message)
             self._horcruxesCaptured.append(message)
 
-    def _fightEnemy(self, enemyName, enemyStats, characterPlaying):
+    def _fightEnemy(self, displayInstance, enemyName, enemyStats, characterPlaying):
 
         '''
         Purpose: To handle fighting an enemy
         Parameters:
+            - displayInstance (Display): The display instance for communication of messages
             - enemyName (str): The name of the enemy
             - enemyStats (dict): The stats of the enemy
             - characterPlaying (Character): The character that was chosen
@@ -195,7 +196,8 @@ class Game():
         '''
 
         self.fight = Fight(enemyName, enemyStats, characterPlaying)
-        self.fight.fight()
+        print("FIGHT HAS BEEN INITIALIZED")
+        self.fight.fight(displayInstance)
         if self.fight.fightResult == 'win':
             self._enemiesLeft -= 1
 
@@ -217,13 +219,17 @@ class Game():
            given game situation"""
         threadSemaphore.lock()
         if self._eventType == 'obstacles' and self._userInput == '1':
-            self._fightEnemy(self._action, enemies[self._action], self.character)
+            self._fightEnemy(displayInstance, self._action, enemies[self._action], self.character)
+            print("After we fought enemy")
         elif self._eventType == 'obstacles' and self._userInput == '2':
             self._noFightSelected()
         threadSemaphore.unlock()
+        print("Lock is gone in handle game function")
 
         # wait for continue message to be set in display
-        while self._continueMessage == "" and self._stepsLeft != 0: {}
+        while not displayInstance.continueSet:
+            if self._stepsLeft == 0: break
+        displayInstance.continueSet = False
 
         # determine if game should be ended
         self._endGame()
@@ -299,7 +305,6 @@ class Game():
                 time.sleep(.1)
                 # receive user input from display
                 self._handleGameSituation(displayInstance)
-                time.sleep(.1)
             elif self._state == GameState.RESULT:
                 time.sleep(.1)
                 threadSemaphore.lock()

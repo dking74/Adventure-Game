@@ -70,6 +70,8 @@ class MainDisplay(graphics.GraphWin):
         self._oldState = DisplayState.END
         self._currentState = DisplayState.START
         self._backgroundImage = backgroundImage
+        self._messagePrinted = False
+        self._continueSet = False
 
     @property
     def state(self):
@@ -82,6 +84,30 @@ class MainDisplay(graphics.GraphWin):
 
         """Setter for the state of the display"""
         self._dislayState = newState
+
+    @property
+    def messagePrinted(self):
+
+        """Getter to see if fight message has been printed"""
+        return self._messagePrinted
+
+    @messagePrinted.setter
+    def messagePrinted(self, newMessage):
+
+        """Setter for message printed in fight"""
+        self._messagePrinted = newMessage
+
+    @property
+    def continueSet(self):
+
+        """Getter to see if message has been printed"""
+        return self._continueSet
+
+    @continueSet.setter
+    def continueSet(self, newMessage):
+
+        """Setter for message printed"""
+        self._continueSet = newMessage
 
     def _createBackground(self, location):
 
@@ -362,14 +388,13 @@ class MainDisplay(graphics.GraphWin):
         """Function that loops continuously waiting for game to update
            to find the message to display"""
 
-        self._lastMessage = None
+        self._lastMessage = ""
         gameInstance.state = GameState.PLAYING
 
         # dumb, but guarantee other thread obtains lock first
         # so that game message can be received first, then start
         time.sleep(.1)
         while gameInstance.state == GameState.PLAYING:
-
             # check if game has ended after lock acquired
             if gameInstance.state == GameState.RESULT:
                 break
@@ -393,6 +418,7 @@ class MainDisplay(graphics.GraphWin):
                 displayText = displayText + " {} horcruxes remain".format(gameInstance.horcruxCount)
             self._printMessage(displayText, Point(125, 375), 40, 8, 2000, .01, 14)
             time.sleep(2)
+            threadSemaphore.unlock()
 
         # handle obstacles by asking if they want to fight or run
         #then setup loop to retrieve fight messages from them
@@ -404,24 +430,23 @@ class MainDisplay(graphics.GraphWin):
                                    Point(125, 375), 24, 15, 0, .01)
             gameInstance.setUserInput(userInput)
             threadSemaphore.unlock()
-            time.sleep(.1)
-
             # have to check this input after other one because lock
             # has been given back to other thread so that messages 
             # can be generated for the fight result
             if userInput == '1':
                 self._printFightMessages(gameInstance)
-              
-        # print the number of steps left to the user;
-        # lock semaphore back up if obstacle event did not occurr
-        if eventType != 'obstacles':
+        else:
             threadSemaphore.unlock()
+              
+        # print the number of steps left to the user
         stepsLeft = gameInstance.getStepsLeft()
         if stepsLeft > 0:
+            time.sleep(.1)
             threadSemaphore.lock()
             displayText = "You have {} steps left. Do you want to continue?".format(stepsLeft)
             userInput = self._askUserQuestion(displayText, Point(125, 485), ['y', 'n']) 
             gameInstance.setContinueInput(userInput)
+            self._continueSet = True
             threadSemaphore.unlock()
 
     def _printFightMessages(self, gameInstance):
@@ -434,20 +459,26 @@ class MainDisplay(graphics.GraphWin):
 
         #start fight, and keep reading messages from game
         messageLocation = Point(125, 375)
+
+        # go until the fight is registered
         while gameInstance.fight.fightOn:
             threadSemaphore.lock()
             if not gameInstance.fight.fightOn:
                 break
+            self._messagePrinted = False
             self._printMessage(gameInstance.fight.fightMessage,
                                messageLocation,
                                30, 9, 3000, .01, 12)
-            time.sleep(3)
+            time.sleep(3.5)
             threadSemaphore.unlock()
             time.sleep(.1)
         
-        # determine results of the fight
+        # determine results of the fight; wait until fight result is determined
+        time.sleep(.5)
         threadSemaphore.lock()
+        print("Waiting on fight result...")
         result = self._getFightResult(gameInstance)
+        print("Result is: " + result)
         self._printMessage(result, messageLocation, 30, 9, 2000, .01, 12)
         time.sleep(2)
         threadSemaphore.unlock()

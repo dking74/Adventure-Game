@@ -8,10 +8,9 @@ class Fight():
     def __init__(self, enemy, enemyStats, character):
         
         """Initialize a fighting instance with the enemy"""
-        self._fightMessage = None
         self._enemy = enemy
         self._enemyStats = enemyStats
-        self._fightOn = True
+        self._fightOn = False
         self._fightMessage = ""
         self._fightResult = ""
         self._character = character
@@ -86,12 +85,10 @@ class Fight():
         addedMessage = "{} points in damage was done and {} has {} health points left.".format(overallDamage, spellReceiver, healthLeft) if spellHit == 'hit' else \
                        "No damage was done to {}".format(spellReceiver)
         self._fightMessage = self._fightMessage + addedMessage
-        time.sleep(.1)
 
     def _determineFightResult(self):
 
         """Determine who won the fight and next steps"""
-        self._fightOn = False
         if self._character.characterHealth <= 0:
             self._fightResult = 'lose'
         elif self._enemyStats['healthRating'] <= 0:
@@ -111,37 +108,50 @@ class Fight():
             threadSemaphore.lock()
         return firstMove
 
-    def fight(self):
+    def _waitUnilMessagePrinted(self, displayInstance):
+
+        """Function to make sure that display prints message
+           before fight continues"""
+        while not displayInstance.messagePrinted: {}
+        self._fightMessage = ""
+
+    def fight(self, displayInstance):
         
         """Function to simulate a fight
            between the current character and enemy"""
         firstMove = True
+        self._fightOn = True
         fightMoves = 5
-        time.sleep(.3)
-        while fightMoves > 0 and self._enemyStats['healthRating'] > 0 and self._character.characterHealth > 0:
 
+        # continue fight for 5 moves, or until one character goes below 0 health
+        while fightMoves > 0 and self._character.characterHealth > 0:
+
+            # get character move
             firstMove = self._lockOnFirstMove(firstMove)
-            #print("Before character fight move")
             self._getFightMove(self._character.characterName)
-            #print("After character fight move")
+            print("Character: " + str(self._fightMessage))
             # if last move resulted in bad health for enemy, exit fight
             if self._enemyStats['healthRating'] <= 0:
                 threadSemaphore.unlock()
-                time.sleep(.1)
                 break
             threadSemaphore.unlock()
-            # make sure that other thread takes control of lock first so pause briefly
             time.sleep(.3)
+
+            # get enemy move
             threadSemaphore.lock()
-            #print("Before enemy fight move")
             self._getFightMove(self._enemy)
-            #print("After enemy fight move")
+            print("Enemy: " + str(self._fightMessage))
             fightMoves = fightMoves - 1
             threadSemaphore.unlock()
             time.sleep(.3)
 
+        print("Character health: " + str(self._character.characterHealth))
+        print("Enemy health: " + str(self._enemyStats['healthRating']))
+        print("Moves: " + str(fightMoves))
+
         # get the result of the fight
         threadSemaphore.lock()
+        self._fightOn = False
         self._determineFightResult()
 
 # spell ratings
