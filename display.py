@@ -12,8 +12,6 @@ import datetime
 import time
 import os
 
-# testing commit
-
 # decorator to check input values
 # acceptable input values is parameter
 # position to place error message is second
