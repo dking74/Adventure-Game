@@ -878,7 +878,7 @@ def spellsDisplay(button, parentWindow):
     message = ""
     for spell in spells:
         tempMessage = "%-20s:          %s points" % (list(spell.keys())[0], str(list(spell.values())[0]))
-        message += "%-s\n" % tempMessage#str(list(spell.values())[0]))
+        message += "%-s\n" % tempMessage
     parentWindow.withdraw()
     display = SubDisplay(parentWindow, [], button, title="Spells")
     display.addComponents(
